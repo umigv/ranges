@@ -88,11 +88,11 @@ class MappedRange : public Range<MappedRange<I, F>> {
     using IteratorT = MappedRangeIterator<I, F>;
 
 public:
-    using difference_type = iterator_difference_t<IteratorT>;
-    using iterator = IteratorT;
-    using pointer = iterator_pointer_t<IteratorT>;
-    using reference = iterator_reference_t<IteratorT>;
-    using value_type = iterator_value_t<IteratorT>;
+    using difference_type = typename RangeTraits<MappedRange>::difference_type;
+    using iterator = typename RangeTraits<MappedRange>::iterator;
+    using pointer = typename RangeTraits<MappedRange>::pointer;
+    using reference = typename RangeTraits<MappedRange>::reference;
+    using value_type = typename RangeTraits<MappedRange>::value_type;
 
     constexpr MappedRange(I first, I last, F f)
     noexcept(std::is_nothrow_move_constructible<I>::value
@@ -125,6 +125,15 @@ constexpr MappedRange<begin_result_t<R>, std::decay_t<F>> map(R &&range, F &&f) 
         std::forward<F>(f),
     };
 }
+
+template <typename I, typename F>
+struct RangeTraits<MappedRange<I, F>> {
+    using difference_type = iterator_difference_t<MappedRangeIterator<I, F>>;
+    using iterator = MappedRangeIterator<I, F>;
+    using pointer = iterator_pointer_t<MappedRangeIterator<I, F>>;
+    using reference = iterator_reference_t<MappedRangeIterator<I, F>>;
+    using value_type = iterator_value_t<MappedRangeIterator<I, F>>;
+};
 
 } // namespace ranges
 } // namespace umigv

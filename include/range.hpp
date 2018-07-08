@@ -1,10 +1,11 @@
 #ifndef UMIGV_RANGES_RANGE_HPP
 #define UMIGV_RANGES_RANGE_HPP
 
+#include "mapped_range.hpp"
+#include "range_fwd.hpp"
+
 #include <type_traits>
 #include <utility>
-
-#include "mapped_range.hpp"
 
 namespace umigv {
 namespace ranges {
@@ -12,11 +13,11 @@ namespace ranges {
 template <typename R>
 class Range {
 public:
-    using difference_type = typename R::difference_type;
-    using iterator = typename R::iterator;
-    using pointer = typename R::pointer;
-    using reference = typename R::reference;
-    using value_type = typename R::value_type;
+    using difference_type = typename RangeTraits<R>::difference_type;
+    using iterator = typename RangeTraits<R>::iterator;
+    using pointer = typename RangeTraits<R>::pointer;
+    using reference = typename RangeTraits<R>::reference;
+    using value_type = typename RangeTraits<R>::value_type;
 
     iterator begin() const noexcept {
         return as_base().begin();
@@ -28,7 +29,7 @@ public:
 
     template <typename F>
     MappedRange<iterator, F> map(F &&f) {
-        return map(as_base(), std::forward<F>(f));
+        return ::umigv::ranges::map(as_base(), std::forward<F>(f));
     }
 
 private:
