@@ -20,7 +20,11 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_executable(test_iterator_range test/iterator_range.cpp)
     target_link_libraries(test_iterator_range ${GTEST_BOTH_LIBRARIES})
 
+    add_executable(test_mapped_range test/mapped_range.cpp)
+    target_link_libraries(test_mapped_range ${GTEST_BOTH_LIBRARIES})
+
     add_test(TestIteratorRange test_iterator_range)
+    add_test(TestMappedRange test_mapped_range)
 endif()
 
 install(DIRECTORY include/ DESTINATION include/umigv/ranges)
