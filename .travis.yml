@@ -21,8 +21,9 @@ matrix:
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
 env:
-  - CFLAGS=-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -Wmissing-prototypes -march=native
-  - CXXFLAGS=-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -march=native
+  global:
+    - CFLAGS="-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -Wmissing-prototypes -march=native"
+    - CXXFLAGS=-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -march=native
 before_install:
   - eval "${MATRIX_EVAL}"
 install:
