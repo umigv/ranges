@@ -1,0 +1,37 @@
+language: cpp
+matrix:
+  include:
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+      env:
+         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-trusty-6.0
+          packages:
+            - clang-6.0
+      env:
+        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+env:
+  - CFLAGS=-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -Wmissing-prototypes -march=native
+  - CXXFLAGS=-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -march=native
+before_install:
+  - eval "${MATRIX_EVAL}"
+install:
+  - apt-get update
+  - apt-get upgrade
+  - apt-get install -y ninja-build gtest
+script:
+  - mkdir -p build
+  - cd build
+  - cmake ..
+  - ninja -j $(cat /proc/cpuinfo | grep processor | wc -l)
+  - ninja test
