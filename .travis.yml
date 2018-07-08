@@ -29,9 +29,9 @@ env:
 before_install:
   - eval "${MATRIX_EVAL}"
 install:
-  - apt-get update
-  - apt-get upgrade
-  - apt-get install -y ninja-build gtest
+  - sudo apt-get update
+  - sudo apt-get upgrade
+  - sudo apt-get install -y ninja-build gtest
 script:
   - mkdir -p build
   - cd build
