@@ -28,7 +28,7 @@ matrix:
 env:
   global:
     - CFLAGS="-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -Wmissing-prototypes -march=native"
-    - CXXFLAGS=-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -march=native
+    - CXXFLAGS="-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -march=native"
 before_install:
   - eval "${MATRIX_EVAL}"
 script:
