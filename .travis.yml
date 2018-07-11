@@ -11,7 +11,7 @@ matrix:
             - g++-8
             - ninja-build
       env:
-         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8
+         - MATRIX_EVAL="CMAKE_FLAGS='-DCMAKE_C_COMPILER=gcc-8 -DCMAKE_CXX_COMPILER=g++-8'"
     - os: linux
       addons:
         apt:
@@ -22,7 +22,7 @@ matrix:
             - clang-6.0
             - ninja-build
       env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - MATRIX_EVAL="CMAKE_FLAGS='-DCMAKE_C_COMPILER=clang-6 -DCMAKE_CXX_COMPILER=clang++-6'"
 env:
   global:
     - CFLAGS="-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -Wmissing-prototypes -march=native"
@@ -32,6 +32,6 @@ before_install:
 script:
   - mkdir -p build
   - cd build
-  - cmake .. -G Ninja -DUMIGV_RANGES_BUILD_TESTS=ON -DCMAKE_C_COMPILER=${CC} -DCMAKE_CXX_COMPILER=${CXX}
+  - cmake .. -G Ninja -DUMIGV_RANGES_BUILD_TESTS=ON
   - ninja -j $(cat /proc/cpuinfo | grep processor | wc -l)
   - ninja test
