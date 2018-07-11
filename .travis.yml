@@ -11,7 +11,7 @@ matrix:
             - g++-8
             - ninja-build
       env:
-         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8
+         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
     - os: linux
       addons:
         apt:
@@ -29,6 +29,10 @@ env:
     - CXXFLAGS="-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -march=native"
 before_install:
   - eval "${MATRIX_EVAL}"
+  - which $CC
+  - which $CXX
+  - $CC --version
+  - $CXX --version
 script:
   - mkdir -p build
   - cd build
