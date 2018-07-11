@@ -11,12 +11,19 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 include_directories(include/)
 
 if (UMIGV_RANGES_BUILD_TESTS)
-    add_subdirectory(googletest)
+    set(__CFLAGS "${CMAKE_C_FLAGS}")
+    set(__CXXFLAGS "${CMAKE_CXX_FLAGS}")
+    set(CMAKE_C_FLAGS "")
+    set(CMAKE_CXX_FLAGS "")
+    add_subdirectory(googletest EXCLUDE_FROM_ALL)
+    set(CMAKE_C_FLAGS "${__CFLAGS}")
+    set(CMAKE_CXX_FLAGS "${__CXXFLAGS}")
+    unset(__CFLAGS)
+    unset(__CXXFLAGS)
 
     enable_testing()
 
-    include_directories(include/ ${gtest_SOURCE_DIR}
-                        ${gtest_SOURCE_DIR}/include/)
+    include_directories(include/ ${gtest_SOURCE_DIR}/include/)
 
     add_executable(test_iterator_range test/iterator_range.cpp)
     target_link_libraries(test_iterator_range gtest gtest_main)
