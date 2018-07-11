@@ -139,6 +139,20 @@ struct begin_result<T, void_t<decltype(std::begin(std::declval<T>()))>> {
 template <typename T>
 using begin_result_t = typename begin_result<T>::type;
 
+template <typename T, typename U, typename = void>
+struct is_nothrow_equality_comparable_with : std::false_type { };
+
+template <typename T, typename U>
+struct is_nothrow_equality_comparable_with<T, U, void_t<
+    decltype(std::declval<T>() == std::declval<U>()),
+    decltype(std::declval<U>() == std::declval<T>())
+>> : true_type_if_t<noexcept(std::declval<T>() == std::declval<U>())
+                    && noexcept(std::declval<U>() == std::declval<T>())> { };
+
+template <typename T>
+struct is_nothrow_equality_comparable
+: is_nothrow_equality_comparable_with<T, T> { };
+
 } // namespace umigv
 
 #endif

@@ -1,6 +1,7 @@
 #ifndef UMIGV_RANGES_RANGE_HPP
 #define UMIGV_RANGES_RANGE_HPP
 
+#include "filtered_range.hpp"
 #include "mapped_range.hpp"
 #include "range_fwd.hpp"
 
@@ -19,33 +20,44 @@ public:
     using reference = typename RangeTraits<R>::reference;
     using value_type = typename RangeTraits<R>::value_type;
 
-    iterator begin() const noexcept {
+    constexpr iterator begin() const noexcept {
         return as_base().begin();
     }
 
-    iterator end() const noexcept {
+    constexpr iterator end() const noexcept {
         return as_base().end();
     }
 
     template <typename F>
-    MappedRange<iterator, F> map(F &&f) {
-        return ::umigv::ranges::map(as_base(), std::forward<F>(f));
+    constexpr MappedRange<iterator, F> map(F &&f)
+    noexcept(noexcept(
+        ::umigv::ranges::map(std::declval<Range>(), std::declval<F>())
+    )) {
+        return ::umigv::ranges::map(*this, std::forward<F>(f));
+    }
+
+    template <typename P>
+    constexpr FilteredRange<iterator, P> filter(P &&predicate)
+    noexcept(noexcept(
+        ::umigv::ranges::filter(std::declval<Range>(), std::declval<P>())
+    )) {
+        return ::umigv::ranges::filter(*this, std::forward<P>(predicate));
     }
 
 private:
-    R& as_base() & noexcept {
+    constexpr R& as_base() & noexcept {
         return static_cast<R&>(*this);
     }
 
-    const R& as_base() const & noexcept {
+    constexpr const R& as_base() const & noexcept {
         return static_cast<const R&>(*this);
     }
 
-    R&& as_base() && noexcept {
+    constexpr R&& as_base() && noexcept {
         return static_cast<R&&>(*this);
     }
 
-    const R&& as_base() const && noexcept {
+    constexpr const R&& as_base() const && noexcept {
         return static_cast<const R&&>(*this);
     }
 };
