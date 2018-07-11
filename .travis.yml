@@ -9,6 +9,8 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - g++-8
+            - libgtest-dev
+            - ninja-build
       env:
          - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8
     - os: linux
@@ -19,17 +21,14 @@ matrix:
             - llvm-toolchain-trusty-6.0
           packages:
             - clang-6.0
+            - libgtest-dev
+            - ninja-build
       env:
         - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
 env:
   global:
     - CFLAGS="-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -Wmissing-prototypes -march=native"
     - CXXFLAGS=-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -march=native
-addons:
-  apt:
-    packages:
-      - libgtest-dev
-      - ninja-build
 before_install:
   - eval "${MATRIX_EVAL}"
 script:
