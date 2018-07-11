@@ -1,6 +1,4 @@
-#include "iterator_range.hpp"
-#include "mapped_range.hpp"
-#include "range.hpp"
+#include "ranges.hpp"
 
 #include <algorithm>
 #include <array>
