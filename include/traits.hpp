@@ -6,13 +6,6 @@
 #include <type_traits>
 #include <utility>
 
-namespace std {
-
-template <typename T>
-struct tuple_size { };
-
-} // namespace std
-
 namespace umigv {
 namespace ranges {
 
@@ -182,11 +175,20 @@ struct decompose {
 template <typename T>
 using decompose_t = typename decompose<T>::type;
 
+template <typename T>
+struct identity {
+    using type = T;
+};
+
+template <typename T>
+using identity_t = typename identity<T>::type;
+
 template <typename T, typename = void>
 struct tuple_size { };
 
 template <typename T>
 struct tuple_size<T, void_t<
+    identity_t<std::tuple_size<std::remove_reference_t<const T>>>,
     decltype(std::tuple_size<std::remove_reference_t<const T>>::value)
 >> : std::integral_constant<
     std::size_t, std::tuple_size<std::remove_reference_t<const T>>::value
