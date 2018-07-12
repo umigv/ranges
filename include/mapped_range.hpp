@@ -1,6 +1,8 @@
 #ifndef UMIGV_RANGES_MAPPED_RANGE_HPP
 #define UMIGV_RANGES_MAPPED_RANGE_HPP
 
+#include "detail/mapped_range.hpp"
+
 #include "invoke.hpp"
 #include "range_fwd.hpp"
 
@@ -12,17 +14,13 @@ namespace umigv {
 namespace ranges {
 
 template <typename I, typename F,
-          std::enable_if_t<
-              is_invocable<const F&, iterator_reference_t<I>>::value, int
-          > = 0>
+          std::enable_if_t<detail::is_mappable<I, F>::value, int> = 0>
 class MappedRange;
 
 template <typename I, typename F,
-          std::enable_if_t<
-              is_invocable<const F&, iterator_reference_t<I>>::value, int
-          > = 0>
+          std::enable_if_t<detail::is_mappable<I, F>::value, int> = 0>
 class MappedRangeIterator {
-    using ResultT = invoke_result_t<const F&, iterator_reference_t<I>>;
+    using ResultT = detail::map_result_t<I, F>;
 
 public:
     using difference_type = iterator_difference_t<I>;
@@ -38,7 +36,7 @@ public:
             throw std::out_of_range{ "MappedRangeIterator::operator*" };
         }
 
-        return invoke(f_, *current_);
+        return detail::do_map(current_, f_);
     }
 
     constexpr pointer operator->() const {
@@ -89,9 +87,7 @@ private:
 };
 
 template <typename I, typename F,
-          std::enable_if_t<
-              is_invocable<const F&, iterator_reference_t<I>>::value, int
-          >>
+          std::enable_if_t<detail::is_mappable<I, F>::value, int>>
 class MappedRange : public Range<MappedRange<I, F>> {
     using IteratorT = MappedRangeIterator<I, F>;
 
