@@ -3,8 +3,8 @@
 
 #include "counting_range.hpp"
 #include "filtered_range.hpp"
-#include "iterator_range.hpp"
 #include "mapped_range.hpp"
 #include "range.hpp"
+#include "range_adapter.hpp"
 
 #endif

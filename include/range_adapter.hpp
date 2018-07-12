@@ -1,9 +1,10 @@
-#ifndef UMIGV_RANGES_ITERATOR_RANGE_HPP
-#define UMIGV_RANGES_ITERATOR_RANGE_HPP
+#ifndef UMIGV_RANGES_RANGE_ADAPTER_HPP
+#define UMIGV_RANGES_RANGE_ADAPTER_HPP
 
 #include "range_fwd.hpp"
 #include "traits.hpp"
 
+#include <initializer_list>
 #include <iterator>
 #include <type_traits>
 
@@ -11,19 +12,16 @@ namespace umigv {
 namespace ranges {
 
 template <typename I, std::enable_if_t<is_iterator<I>::value, int> = 0>
-class IteratorRange;
-
-template <typename I, std::enable_if_t<is_iterator<I>::value, int>>
-class IteratorRange : public Range<IteratorRange<I>> {
+class RangeAdapter : public Range<RangeAdapter<I>> {
 public:
     using difference_type =
-        typename RangeTraits<IteratorRange>::difference_type;
-    using iterator = typename RangeTraits<IteratorRange>::iterator;
-    using pointer = typename RangeTraits<IteratorRange>::pointer;
-    using reference = typename RangeTraits<IteratorRange>::reference;
-    using value_type = typename RangeTraits<IteratorRange>::value_type;
+        typename RangeTraits<RangeAdapter>::difference_type;
+    using iterator = typename RangeTraits<RangeAdapter>::iterator;
+    using pointer = typename RangeTraits<RangeAdapter>::pointer;
+    using reference = typename RangeTraits<RangeAdapter>::reference;
+    using value_type = typename RangeTraits<RangeAdapter>::value_type;
 
-    constexpr IteratorRange(I first, I last)
+    constexpr RangeAdapter(I first, I last)
     : first_{ first }, last_{ last } { }
 
     constexpr iterator begin() const noexcept {
@@ -40,20 +38,30 @@ private:
 };
 
 template <typename I>
-IteratorRange<I> iterator_range(I first, I last) {
+constexpr RangeAdapter<I> adapt(I first, I last)
+noexcept {
     return { first, last };
 }
 
 template <typename R>
-IteratorRange<begin_result_t<R>> iterator_range(R &&r) {
+constexpr RangeAdapter<begin_result_t<R>> adapt(R &&r) noexcept {
     using std::begin;
     using std::end;
 
     return { begin(std::forward<R>(r)), end(std::forward<R>(r)) };
 }
 
+template <typename T>
+constexpr RangeAdapter<begin_result_t<std::initializer_list<T>>>
+adapt(std::initializer_list<T> list) noexcept {
+    using std::begin;
+    using std::end;
+
+    return { begin(list), end(list) };
+}
+
 template <typename I>
-struct RangeTraits<IteratorRange<I>> {
+struct RangeTraits<RangeAdapter<I>> {
     using difference_type = iterator_difference_t<I>;
     using iterator = I;
     using pointer = iterator_pointer_t<I>;
