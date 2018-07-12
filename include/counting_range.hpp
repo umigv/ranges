@@ -25,9 +25,7 @@ public:
     friend CountingRange<T>;
 
     constexpr reference operator*() const {
-        if (current_ >= end_) {
-            throw std::out_of_range{ "CountingRangeIterator::operator*" };
-        }
+        range_check("CountingRangeIterator::operator*");
 
         return current_;
     }
@@ -37,9 +35,7 @@ public:
     }
 
     constexpr CountingRangeIterator& operator++() {
-        if (current_ >= end_) {
-            throw std::out_of_range{ "CountingRangeIterator::operator++" };
-        }
+        range_check("CountingRangeIterator::operator++");
 
         current_ += step_;
 
@@ -73,6 +69,15 @@ private:
                                     const T &end) noexcept
     : current_{ current }, step_{ step }, end_{ end } { }
 
+    template <std::size_t N>
+    constexpr void range_check(const char (&what)[N]) const {
+        if (step_ > 0 && current_ >= end_) {
+            throw std::out_of_range{ what };
+        } else if (step_ < 0 && current_ <= end_) {
+            throw std::out_of_range{ what };
+        }
+    }
+
     T current_ = 0;
     T step_ = 1;
     T end_;
@@ -95,7 +100,8 @@ public:
 
     constexpr CountingRange(const T &begin, const T &step,
                             const T &end) noexcept
-    : begin_{ begin }, step_{ step }, end_{ begin + (end - begin) / step_ } { }
+    : begin_{ begin }, step_{ step },
+      end_{ begin + step * (end - begin) / step } { }
 
     constexpr CountingRangeIterator<T> begin() const noexcept {
         return { begin_, step_, end_ };
