@@ -37,25 +37,25 @@ constexpr unwrap_result_t<T> unwrap(std::reference_wrapper<T> t) noexcept {
 
 template <typename T, typename ...As>
 using invoke_result =
-    detail::invoke_result<std::decay_t<T>, void, unwrap_result_t<As>...>;
+    detail::invoke_result<decompose_t<T>, void, unwrap_result_t<As>...>;
 
 template <typename T, typename ...As>
 using invoke_result_t = typename invoke_result<T, As...>::type;
 
 template <typename T, typename ...As>
 using is_invocable =
-    detail::is_invocable<std::decay_t<T>, void, unwrap_result_t<As>...>;
+    detail::is_invocable<decompose_t<T>, void, unwrap_result_t<As>...>;
 
 template <typename T, typename ...As>
 using is_nothrow_invocable =
-    detail::is_nothrow_invocable<std::decay_t<T>, void, unwrap_result_t<As>...>;
+    detail::is_nothrow_invocable<decompose_t<T>, void, unwrap_result_t<As>...>;
 
 template <typename C, typename ...As,
           std::enable_if_t<is_invocable<C, As...>::value, int> = 0>
 constexpr invoke_result_t<C, unwrap_result_t<As>...> invoke(C &&c, As &&...args)
 noexcept(is_nothrow_invocable<C, As...>::value) {
     using TraitsT = typename detail::invoke_traits<
-        std::decay_t<C>,
+        decompose_t<C>,
         void,
         unwrap_result_t<As>...
     >;
