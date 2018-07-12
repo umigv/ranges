@@ -5,6 +5,7 @@
 #include "const_iterator.hpp"
 #include "filtered_range.hpp"
 #include "mapped_range.hpp"
+#include "range_adapter.hpp"
 #include "range_fwd.hpp"
 
 #include <type_traits>
@@ -36,7 +37,7 @@ public:
     }
 
     constexpr const_iterator cend() const noexcept {
-        return const_iterator{ cend() };
+        return const_iterator{ end() };
     }
 
     template <typename F>
@@ -68,6 +69,10 @@ public:
     >
     constexpr C collect() const {
         return C(begin(), end());
+    }
+
+    constexpr RangeAdapter<ConstIterator<iterator>> as_const() const noexcept {
+        return ::umigv::ranges::adapt(cbegin(), cend());
     }
 
 private:
