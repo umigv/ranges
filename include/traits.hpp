@@ -176,22 +176,25 @@ template <typename T>
 using decompose_t = typename decompose<T>::type;
 
 template <typename T, typename = void>
+struct tuple_size { };
+
+template <typename T>
+struct tuple_size<T, void_t<
+    std::tuple_size<std::remove_reference_t<T>>,
+    decltype(std::tuple_size<std::remove_reference_t<T>>::value)
+>> : std::integral_constant<
+    std::size_t, std::tuple_size<std::remove_reference_t<T>>::value
+> { };
+
+template <typename T, typename = void>
 struct is_tuple : std::false_type { };
 
 template <typename T>
 struct is_tuple<
     T,
-    void_t<decltype(std::tuple_size<std::remove_reference_t<T>>::value)>
+    void_t<decltype(tuple_size<std::remove_reference_t<T>>::value)>
 >
 : std::true_type { };
-
-template <typename T, typename = void>
-struct tuple_size { };
-
-template <typename T>
-struct tuple_size<T, void_t<std::enable_if_t<is_tuple<T>::value>>>
-: std::tuple_size<std::remove_reference_t<T>>
-{ };
 
 template <std::size_t I, typename T, typename = void>
 struct tuple_element { };
