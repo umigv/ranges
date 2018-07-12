@@ -29,7 +29,7 @@ struct is_applicable<
 
 template <typename C, typename T, std::size_t ...Is>
 constexpr is_applicable<C, T, void, Is...>
-check_applicable(C, T, std::index_sequence<Is...>);
+check_applicable(C&&, T&&, std::index_sequence<Is...>);
 
 template <typename C, typename T, typename = void, std::size_t ...Is>
 struct is_nothrow_applicable : std::false_type { };
@@ -48,7 +48,7 @@ struct is_nothrow_applicable<
 
 template <typename C, typename T, std::size_t ...Is>
 constexpr is_nothrow_applicable<C, T, void, Is...>
-check_nothrow_applicable(C, T, std::index_sequence<Is...>);
+check_nothrow_applicable(C&&, T&&, std::index_sequence<Is...>);
 
 template <typename C, typename T, typename = void, std::size_t ...Is>
 struct apply_result { };
@@ -57,14 +57,14 @@ template <typename C, typename T, std::size_t ...Is>
 struct apply_result<
     C,
     T,
-    void_t<std::enable_if_t<is_applicable<C, T, void, Is...>::value>>, Is...
+    void_t<std::enable_if_t<is_applicable<C&&, T&&, void, Is...>::value>>, Is...
 > {
     using type = invoke_result_t<C&&, tuple_element_t<Is, T>...>;
 };
 
 template <typename C, typename T, std::size_t ...Is>
-constexpr apply_result<C, T, void, Is...>
-check_apply_result(C, T, std::index_sequence<Is...>) noexcept;
+constexpr apply_result<C&&, T&&, void, Is...>
+check_apply_result(C&&, T&&, std::index_sequence<Is...>) noexcept;
 
 template <typename C, typename T, std::size_t ...Is>
 constexpr invoke_result_t<C&&, tuple_element_t<Is, T>...>
