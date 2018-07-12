@@ -1,5 +1,6 @@
 dist: trusty
 language: cpp
+cache: ccache
 matrix:
   include:
     - os: linux
@@ -11,7 +12,7 @@ matrix:
             - g++-8
             - ninja-build
       env:
-         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+         - MATRIX_EVAL="CC='ccache gcc-8' && CXX='ccache g++-8'"
     - os: linux
       addons:
         apt:
@@ -22,7 +23,7 @@ matrix:
             - clang-6.0
             - ninja-build
       env:
-        - MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+        - MATRIX_EVAL="CC='ccache clang-6.0' && CXX='ccache clang++-6.0'"
 env:
   global:
     - CFLAGS="-Wall -Wextra -pedantic -Wconversion -Wshadow -Wcast-qual -Wmissing-prototypes -march=native"
