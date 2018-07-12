@@ -84,7 +84,7 @@ private:
 };
 
 template <typename T>
-class CountingRange {
+class CountingRange : public Range<CountingRange<T>> {
 public:
     using difference_type =
         typename RangeTraits<CountingRange>::difference_type;

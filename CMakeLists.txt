@@ -37,10 +37,14 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_executable(test_counting_range test/counting_range.cpp)
     target_link_libraries(test_counting_range gtest gtest_main)
 
+    add_executable(test_collect test/collect.cpp)
+    target_link_libraries(test_collect gtest gtest_main)
+
     add_test(TestRangeAdapter test_range_adapter)
     add_test(TestMappedRange test_mapped_range)
     add_test(TestFilteredRange test_filtered_range)
     add_test(TestCountingRange test_counting_range)
+    add_test(TestCollect test_collect)
 endif()
 
 install(DIRECTORY include/ DESTINATION include/umigv/ranges)
