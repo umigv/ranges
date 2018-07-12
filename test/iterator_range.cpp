@@ -9,7 +9,7 @@
 
 #include <gtest/gtest.h>
 
-TEST(IteratorRangeTest, IntVector) {
+TEST(IteratorRangeTest, Vector) {
     constexpr std::array<int, 8> INPUT{ { 3, 1, 2, 4, 5, 0, 6, 7 } };
     constexpr std::array<int, 8> OUTPUT = INPUT;
 
@@ -19,12 +19,4 @@ TEST(IteratorRangeTest, IntVector) {
 
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
                 && u.size() == OUTPUT.size());
-}
-
-TEST(IteratorRangeTest, Set) {
-
-}
-
-TEST(IteratorRangeTest, IstreamIterator) {
-
 }
