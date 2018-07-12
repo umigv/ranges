@@ -6,6 +6,13 @@
 #include <type_traits>
 #include <utility>
 
+namespace std {
+
+template <typename T>
+struct tuple_size { };
+
+} // namespace std
+
 namespace umigv {
 namespace ranges {
 
@@ -180,10 +187,9 @@ struct tuple_size { };
 
 template <typename T>
 struct tuple_size<T, void_t<
-    std::tuple_size<std::remove_reference_t<T>>,
-    decltype(std::tuple_size<std::remove_reference_t<T>>::value)
+    decltype(std::tuple_size<std::remove_reference_t<const T>>::value)
 >> : std::integral_constant<
-    std::size_t, std::tuple_size<std::remove_reference_t<T>>::value
+    std::size_t, std::tuple_size<std::remove_reference_t<const T>>::value
 > { };
 
 template <typename T, typename = void>
