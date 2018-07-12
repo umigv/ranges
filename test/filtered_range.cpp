@@ -80,7 +80,7 @@ TEST(FilteredRangeTest, Apply) {
     };
     const std::vector<std::pair<int, int>> OUTPUT{ { 0, 0 }, { 1, 1 } };
 
-    constexpr auto is_equal = [](auto &&lhs, auto &&rhs) noexcept -> bool {
+    const auto is_equal = [](auto &&lhs, auto &&rhs) noexcept -> bool {
         return std::forward<decltype(lhs)>(lhs)
                == std::forward<decltype(rhs)>(rhs);
     };
