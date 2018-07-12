@@ -25,8 +25,8 @@ if (UMIGV_RANGES_BUILD_TESTS)
 
     include_directories(include/ ${gtest_SOURCE_DIR}/include/)
 
-    add_executable(test_iterator_range test/iterator_range.cpp)
-    target_link_libraries(test_iterator_range gtest gtest_main)
+    add_executable(test_range_adapter test/range_adapter.cpp)
+    target_link_libraries(test_range_adapter gtest gtest_main)
 
     add_executable(test_mapped_range test/mapped_range.cpp)
     target_link_libraries(test_mapped_range gtest gtest_main)
@@ -40,7 +40,7 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_executable(test_collect test/collect.cpp)
     target_link_libraries(test_collect gtest gtest_main)
 
-    add_test(TestIteratorRange test_iterator_range)
+    add_test(TestRangeAdapter test_range_adapter)
     add_test(TestMappedRange test_mapped_range)
     add_test(TestFilteredRange test_filtered_range)
     add_test(TestCountingRange test_counting_range)

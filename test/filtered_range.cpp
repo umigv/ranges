@@ -10,7 +10,7 @@ TEST(FilteredRangeTest, Basic) {
     constexpr std::array<int, 4> OUTPUT{ { 0, 2, 4, 6 } };
 
     const std::vector<int> v(INPUT.cbegin(), INPUT.cend());
-    const std::vector<int> u = umigv::ranges::iterator_range(v)
+    const std::vector<int> u = umigv::ranges::adapt(v)
         .filter([](auto &&x) { return std::forward<decltype(x)>(x) % 2 == 0; })
         .collect();
 
@@ -37,7 +37,7 @@ TEST(FilteredRangeTest, ReferenceWrapper) {
     CountingPredicate predicate;
 
     const std::vector<int> v(INPUT.cbegin(), INPUT.cend());
-    const std::vector<int> u = umigv::ranges::iterator_range(v)
+    const std::vector<int> u = umigv::ranges::adapt(v)
         .filter(std::ref(predicate))
         .collect();
 
@@ -63,7 +63,7 @@ TEST(FilteredRangeTest, MemberFunction) {
     constexpr std::array<Integer, 1> OUTPUT{ { { 1 } } };
 
     const std::vector<Integer> v(INPUT.cbegin(), INPUT.cend());
-    const std::vector<Integer> u = umigv::ranges::iterator_range(v)
+    const std::vector<Integer> u = umigv::ranges::adapt(v)
         .filter(&Integer::is_positive)
         .collect();
 
