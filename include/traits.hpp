@@ -153,6 +153,27 @@ template <typename T>
 struct is_nothrow_equality_comparable
 : is_nothrow_equality_comparable_with<T, T> { };
 
+template <typename T>
+struct remove_cvref {
+    using type = std::remove_cv_t<std::remove_reference_t<T>>;
+};
+
+template <typename T>
+using remove_cvref_t = typename remove_cvref<T>::type;
+
+template <typename T>
+struct decompose {
+    using type = std::conditional_t<
+        std::is_pointer<remove_cvref_t<T>>::value
+        || std::is_member_pointer<remove_cvref_t<T>>::value,
+        remove_cvref_t<T>,
+        T
+    >;
+};
+
+template <typename T>
+using decompose_t = typename decompose<T>::type;
+
 } // namespace umigv
 
 #endif
