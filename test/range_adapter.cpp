@@ -25,9 +25,8 @@ TEST(RangeAdapterTest, Iterators) {
     constexpr std::array<int, 4> INPUT{ { 0, 1, 2, 3} };
     constexpr std::array<int, 2> OUTPUT{ { 1, 2 } };
 
-    const auto range = umigv::ranges::adapt(INPUT.cbegin() + 1,
-                                            INPUT.cend() - 1);
-    const std::vector<int> v(range.begin(), range.end());
+    const std::vector<int> v =
+        umigv::ranges::adapt(INPUT.cbegin() + 1, INPUT.cend() - 1).collect();
 
     EXPECT_TRUE(std::equal(v.cbegin(), v.cend(), OUTPUT.cbegin())
                 && v.size() == OUTPUT.size());
@@ -36,8 +35,7 @@ TEST(RangeAdapterTest, Iterators) {
 TEST(RangeAdapterTest, InitializerList) {
     constexpr std::array<int, 3> OUTPUT{ { 4, 2, 0 } };
 
-    const auto range = umigv::ranges::adapt({ 4, 2, 0 });
-    const std::vector<int> v(range.begin(), range.end());
+    const std::vector<int> v = umigv::ranges::adapt({ 4, 2, 0 }).collect();
 
     EXPECT_TRUE(std::equal(v.cbegin(), v.cend(), OUTPUT.cbegin())
                 && v.size() == OUTPUT.size());
