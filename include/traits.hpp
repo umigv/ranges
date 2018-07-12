@@ -7,6 +7,7 @@
 #include <utility>
 
 namespace umigv {
+namespace ranges {
 
 template <typename ...Ts>
 using void_t = void;
@@ -197,12 +198,13 @@ struct tuple_element { };
 
 template <std::size_t I, typename T>
 struct tuple_element<I, T, void_t<std::enable_if_t<is_tuple<T>::value>>> {
-    using type = std::tuple_element_t<I, std::remove_reference_t<T>>;
+    using type = decltype((std::get<I>(std::declval<T>())));
 };
 
 template <std::size_t I, typename T>
 using tuple_element_t = typename tuple_element<I, T>::type;
 
+} // namespace ranges
 } // namespace umigv
 
 #endif
