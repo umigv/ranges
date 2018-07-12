@@ -8,8 +8,7 @@
 TEST(CountingRangeTest, Basic) {
     constexpr std::array<int, 8> OUTPUT{ { 0, 1, 2, 3, 4, 5, 6, 7 } };
 
-    const auto range = umigv::ranges::range(8);
-    const std::vector<int> u(range.begin(), range.end());
+    const std::vector<int> u = umigv::ranges::range(8).collect();
 
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
                 && u.size() == OUTPUT.size());
@@ -18,8 +17,7 @@ TEST(CountingRangeTest, Basic) {
 TEST(CountingRangeTest, Negative) {
     constexpr std::array<int, 8> OUTPUT{ { 0, -1, -2, -3, -4, -5, -6, -7 } };
 
-    const auto range = umigv::ranges::range(0, -1, -8);
-    const std::vector<int> u(range.begin(), range.end());
+    const std::vector<int> u = umigv::ranges::range(0, -1, -8).collect();
 
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
                 && u.size() == OUTPUT.size());
@@ -28,8 +26,7 @@ TEST(CountingRangeTest, Negative) {
 TEST(CountingRangeTest, Stride) {
     constexpr std::array<int, 4> OUTPUT{ { 0, 2, 4, 6 } };
 
-    const auto range = umigv::ranges::range(0, 2, 8);
-    const std::vector<int> u(range.begin(), range.end());
+    const std::vector<int> u = umigv::ranges::range(0, 2, 8).collect();
 
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
                 && u.size() == OUTPUT.size());
@@ -38,8 +35,7 @@ TEST(CountingRangeTest, Stride) {
 TEST(CountingRangeTest, Offset) {
     constexpr std::array<int, 4> OUTPUT{ { 4, 5, 6, 7 } };
 
-    const auto range = umigv::ranges::range(4, 8);
-    const std::vector<int> u(range.begin(), range.end());
+    const std::vector<int> u = umigv::ranges::range(4, 8).collect();
 
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
                 && u.size() == OUTPUT.size());
@@ -57,8 +53,7 @@ struct EpsilonEquals {
 TEST(CountingRangeTest, Double) {
     constexpr std::array<double, 4> OUTPUT{ { 0.0, 0.5, 1.0, 1.5 } };
 
-    const auto range = umigv::ranges::range(0.0, 0.5, 2.0);
-    const std::vector<double> u(range.begin(), range.end());
+    const std::vector<double> u = umigv::ranges::range(0.0, 0.5, 2.0).collect();
 
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin(),
                            EpsilonEquals{ })

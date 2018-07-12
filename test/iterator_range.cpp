@@ -14,8 +14,7 @@ TEST(IteratorRangeTest, Vector) {
     constexpr std::array<int, 8> OUTPUT = INPUT;
 
     const std::vector<int> v(INPUT.cbegin(), INPUT.cend());
-    const auto range = umigv::ranges::iterator_range(v);
-    const std::vector<int> u(range.begin(), range.end());
+    const std::vector<int> u = umigv::ranges::iterator_range(v).collect();
 
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
                 && u.size() == OUTPUT.size());
