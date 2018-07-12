@@ -1,6 +1,9 @@
 #ifndef UMIGV_RANGES_FILTERED_RANGE_HPP
 #define UMIGV_RANGES_FILTERED_RANGE_HPP
 
+#include "detail/filtered_range.hpp"
+
+#include "apply.hpp"
 #include "invoke.hpp"
 #include "range_fwd.hpp"
 #include "traits.hpp"
@@ -10,23 +13,13 @@
 namespace umigv {
 namespace ranges {
 
-template <typename I, typename P, typename = void>
-struct is_filterable : std::false_type { };
-
-template <typename I, typename P>
-struct is_filterable<I, P, void_t<std::enable_if_t<
-    is_invocable<const P&, iterator_reference_t<I>>::value
-    && std::is_convertible<
-        invoke_result_t<const P&, iterator_reference_t<I>>, bool
-    >::value
->>> : std::true_type { };
-
 template <typename I, typename P,
-          std::enable_if_t<is_filterable<I, P>::value, int> = 0>
+          std::enable_if_t<detail::is_filterable<I, P>::value, int> = 0>
 class FilteredRange;
 
 template <typename I, typename P,
-          std::enable_if_t<is_filterable<I, P>::value, int> = 0>
+          std::enable_if_t<detail::is_filterable<I, P>::value, int> = 0,
+          typename = void>
 class FilteredRangeIterator {
 public:
     using difference_type = iterator_difference_t<I>;
@@ -55,7 +48,7 @@ public:
         }
 
         ++current_;
-        advance();
+        detail::advance(current_, last_, predicate_);
 
         return *this;
     }
@@ -88,13 +81,7 @@ private:
     noexcept(std::is_nothrow_copy_constructible<I>::value
              && std::is_nothrow_copy_constructible<P>::value)
     : current_{ current }, last_{ last }, predicate_{ predicate } {
-        advance();
-    }
-
-    constexpr void advance() {
-        while (!(current_ == last_) && !invoke(predicate_, *current_)) {
-            ++current_;
-        }
+        detail::advance(current_, last_, predicate_);
     }
 
     I current_;
@@ -103,7 +90,7 @@ private:
 };
 
 template <typename I, typename P,
-          std::enable_if_t<is_filterable<I, P>::value, int>>
+          std::enable_if_t<detail::is_filterable<I, P>::value, int>>
 class FilteredRange : public Range<FilteredRange<I, P>> {
 public:
     using difference_type =
