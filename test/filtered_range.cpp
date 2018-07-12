@@ -1,6 +1,7 @@
 #include "ranges.hpp"
 
 #include <functional>
+#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -69,4 +70,58 @@ TEST(FilteredRangeTest, MemberFunction) {
 
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
                 && u.size() == OUTPUT.size());
+}
+
+TEST(FilteredRangeTest, Apply) {
+    const std::vector<std::pair<int, int>> INPUT{
+        { 0, 0 },
+        { 2, 3 },
+        { 1, 1 }
+    };
+    const std::vector<std::pair<int, int>> OUTPUT{ { 0, 0 }, { 1, 1 } };
+
+    constexpr auto is_equal = [](auto &&lhs, auto &&rhs) noexcept -> bool {
+        return std::forward<decltype(lhs)>(lhs)
+               == std::forward<decltype(rhs)>(rhs);
+    };
+
+    const std::vector<std::pair<int, int>> v =
+        umigv::ranges::filter(INPUT, is_equal).collect();
+
+    EXPECT_TRUE(std::equal(v.cbegin(), v.cend(), OUTPUT.cbegin())
+                && v.size() == OUTPUT.size());
+}
+
+TEST(FilteredRangeTest, ApplyOverload) {
+    struct EqualityTester {
+        constexpr bool operator()(const std::tuple<int, int> &tuple) noexcept {
+            ++invoke_count;
+            return std::get<0>(tuple) == std::get<1>(tuple);
+        }
+
+        constexpr bool operator()(int lhs, int rhs) noexcept {
+            ++apply_count;
+            return lhs == rhs;
+        }
+
+        int invoke_count = 0;
+        int apply_count = 0;
+    };
+
+    const std::vector<std::pair<int, int>> INPUT{
+        { 0, 0 },
+        { 2, 3 },
+        { 1, 1 }
+    };
+    const std::vector<std::pair<int, int>> OUTPUT{ { 0, 0 }, { 1, 1 } };
+
+    EqualityTester tester;
+
+    const std::vector<std::pair<int, int>> v =
+        umigv::ranges::filter(INPUT, std::ref(tester)).collect();
+
+    EXPECT_TRUE(std::equal(v.cbegin(), v.cend(), OUTPUT.cbegin())
+                && v.size() == OUTPUT.size()
+                && tester.invoke_count == 3
+                && tester.apply_count == 0);
 }
