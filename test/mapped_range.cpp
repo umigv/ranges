@@ -21,3 +21,16 @@ TEST(MappedRangeTest, Vector) {
     EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
                 && u.size() == OUTPUT.size());
 }
+
+TEST(MappedRangeTest, MemberFunction) {
+    static const std::array<std::string, 3> INPUT{ { "foo", "barbaz", "qux" } };
+    static const std::array<std::string::size_type, 3> OUTPUT{ { 3, 6, 3 } };
+
+    const std::vector<std::string> v(INPUT.cbegin(), INPUT.cend());
+    const auto range = umigv::ranges::iterator_range(v)
+        .map(&std::string::size);
+    const std::vector<std::string::size_type> u(range.begin(), range.end());
+
+    EXPECT_TRUE(std::equal(u.cbegin(), u.cend(), OUTPUT.cbegin())
+                && u.size() == OUTPUT.size());
+}
