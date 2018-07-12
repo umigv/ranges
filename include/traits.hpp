@@ -187,10 +187,14 @@ template <typename T, typename = void>
 struct tuple_size { };
 
 template <typename T>
-struct tuple_size<T, void_t<
-    identity_t<std::tuple_size<std::remove_reference_t<const T>>>,
-    decltype(std::tuple_size<std::remove_reference_t<const T>>::value)
->> : std::integral_constant<
+struct tuple_size<T, void_t<std::enable_if_t<
+    std::is_default_constructible<T>::value
+    || std::is_copy_constructible<T>::value
+    || std::is_move_constructible<T>::value
+    || std::is_copy_assignable<T>::value
+    || std::is_move_assignable<T>::value
+>, decltype(std::tuple_size<std::remove_reference_t<const T>>::value)>>
+: std::integral_constant<
     std::size_t, std::tuple_size<std::remove_reference_t<const T>>::value
 > { };
 
