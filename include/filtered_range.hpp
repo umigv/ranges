@@ -104,7 +104,7 @@ private:
 
 template <typename I, typename P,
           std::enable_if_t<is_filterable<I, P>::value, int>>
-class FilteredRange {
+class FilteredRange : public Range<FilteredRange<I, P>> {
 public:
     using difference_type =
         typename RangeTraits<FilteredRange>::difference_type;
