@@ -1,6 +1,7 @@
 #ifndef UMIGV_RANGES_RANGE_HPP
 #define UMIGV_RANGES_RANGE_HPP
 
+#include "collect.hpp"
 #include "filtered_range.hpp"
 #include "mapped_range.hpp"
 #include "range_fwd.hpp"
@@ -42,6 +43,21 @@ public:
         ::umigv::ranges::filter(std::declval<Range>(), std::declval<P>())
     )) {
         return ::umigv::ranges::filter(*this, std::forward<P>(predicate));
+    }
+
+    constexpr Collectable<iterator> collect() const {
+        return { begin(), end() };
+    }
+
+    template <
+        typename C,
+        std::enable_if_t<
+            std::is_constructible<C, iterator, iterator>::value,
+            int
+        > = 0
+    >
+    constexpr C collect() const {
+        return C(begin(), end());
     }
 
 private:
