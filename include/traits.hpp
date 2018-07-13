@@ -7,6 +7,7 @@
 #include <utility>
 
 namespace umigv {
+namespace ranges {
 
 template <typename ...Ts>
 using void_t = void;
@@ -174,6 +175,98 @@ struct decompose {
 template <typename T>
 using decompose_t = typename decompose<T>::type;
 
+template <typename T>
+struct identity {
+    using type = T;
+};
+
+template <typename T>
+using identity_t = typename identity<T>::type;
+
+namespace detail {
+
+template <typename T, typename ...Ts>
+using head_t = T;
+
+template <typename T>
+struct tuple_size { };
+
+template <typename T>
+struct tuple_size<head_t<
+    const T,
+    std::enable_if_t<!std::is_volatile<T>::value>,
+    std::integral_constant<std::size_t, sizeof(std::tuple_size<T>)>
+>> : std::integral_constant<std::size_t, std::tuple_size<T>::value> { };
+
+template <typename T>
+struct tuple_size<head_t<
+    volatile T,
+    std::enable_if_t<!std::is_const<T>::value>,
+    std::integral_constant<std::size_t, sizeof(std::tuple_size<T>)>
+>> : std::integral_constant<std::size_t, std::tuple_size<T>::value> { };
+
+template <typename T>
+struct tuple_size<head_t<
+    const volatile T,
+    std::integral_constant<std::size_t, sizeof(std::tuple_size<T>)>
+>> : std::integral_constant<std::size_t, std::tuple_size<T>::value> { };
+
+} // namespace detail
+
+template <typename T, typename = void>
+struct tuple_size { };
+
+template <typename T>
+struct tuple_size<
+    T,
+    void_t<decltype(detail::tuple_size<const std::remove_reference_t<T>>::value)
+>> : std::integral_constant<
+    std::size_t,
+    std::tuple_size<const std::remove_reference_t<T>>::value
+> { };
+
+template <typename T, typename = void>
+struct is_tuple : std::false_type { };
+
+template <typename T>
+struct is_tuple<
+    T,
+    void_t<decltype(detail::tuple_size<const std::remove_reference_t<T>>::value)>
+>
+: std::true_type { };
+
+template <std::size_t I, typename T, typename = void>
+struct tuple_element { };
+
+template <std::size_t I, typename T>
+struct tuple_element<I, T, void_t<std::enable_if_t<is_tuple<T>::value>>> {
+    using type = decltype((std::get<I>(std::declval<T>())));
+};
+
+template <std::size_t I, typename T>
+using tuple_element_t = typename tuple_element<I, T>::type;
+
+template <typename...>
+struct conjunction : std::true_type { };
+
+template <typename T>
+struct conjunction<T> : T { };
+
+template <typename T, typename ...Ts>
+struct conjunction<T, Ts...>
+: std::conditional_t<static_cast<bool>(T::value), conjunction<Ts...>, T> { };
+
+template <typename...>
+struct disjunction : std::false_type { };
+
+template <class T>
+struct disjunction<T> : T { };
+
+template <class T, class... Ts>
+struct disjunction<T, Ts...>
+: std::conditional_t<static_cast<bool>(T::value), T, disjunction<Ts...>> { };
+
+} // namespace ranges
 } // namespace umigv
 
 #endif
