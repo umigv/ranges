@@ -46,6 +46,9 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_executable(test_apply test/apply.cpp)
     target_link_libraries(test_apply gtest gtest_main)
 
+    add_executable(test_enumerated_range test/enumerated_range.cpp)
+    target_link_libraries(test_enumerated_range gtest gtest_main)
+
     add_test(TestRangeAdapter test_range_adapter)
     add_test(TestMappedRange test_mapped_range)
     add_test(TestFilteredRange test_filtered_range)
@@ -53,6 +56,7 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_test(TestCollect test_collect)
     add_test(TestConstIterator test_const_iterator)
     add_test(TestApply test_apply)
+    add_test(TestEnumeratedRange test_enumerated_range)
 endif()
 
 install(DIRECTORY include/ DESTINATION include/umigv/ranges)
