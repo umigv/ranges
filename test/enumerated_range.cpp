@@ -2,8 +2,10 @@
 
 #include <algorithm>
 #include <array>
-#include <vector>
+#include <iterator>
+#include <sstream>
 #include <utility>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -22,6 +24,22 @@ TEST(EnumeratedRangeTest, Basic) {
 
     const std::vector<std::pair<std::size_t, int>> v =
         umigv::ranges::enumerate(INPUT).collect();
+
+    ASSERT_TRUE(std::equal(OUTPUT.cbegin(), OUTPUT.cend(), v.cbegin())
+                && OUTPUT.size() == v.size());
+}
+
+TEST(EnumeratedRangeTest, IstreambufIterator) {
+    std::istringstream iss{ "foo" };
+    constexpr std::array<std::pair<std::size_t, char>, 3> OUTPUT{ {
+        { 0, 'f' },
+        { 1, 'o' },
+        { 2, 'o' }
+    } };
+
+    const std::vector<std::pair<std::size_t, char>> v =
+        umigv::ranges::adapt(std::istreambuf_iterator<char>{ iss },
+                             std::istreambuf_iterator<char>{ }).enumerate().collect();
 
     ASSERT_TRUE(std::equal(OUTPUT.cbegin(), OUTPUT.cend(), v.cbegin())
                 && OUTPUT.size() == v.size());
