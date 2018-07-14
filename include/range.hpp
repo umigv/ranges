@@ -62,7 +62,7 @@ public:
     noexcept(noexcept(
         ::umigv::ranges::enumerate<T>(std::declval<Range>())
     )) {
-        return ::umigv::ranges::enumerate<T>(std::declval<Range>());
+        return ::umigv::ranges::enumerate<T>(*this);
     }
 
     constexpr Collectable<iterator> collect() const {
