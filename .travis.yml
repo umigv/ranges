@@ -11,6 +11,7 @@ matrix:
           packages:
             - g++-8
             - ninja-build
+            - libboost-all-dev
       env:
          - MATRIX_EVAL="CC='ccache gcc-8' && CXX='ccache g++-8'"
     - os: linux
@@ -22,6 +23,7 @@ matrix:
           packages:
             - clang-6.0
             - ninja-build
+            - libboost-all-dev
       env:
         - MATRIX_EVAL="CC='ccache clang-6.0' && CXX='ccache clang++-6.0'"
 env:
