@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <utility>
 
-#include <boost/optional.hpp>
+#include <type_safe/optional.hpp>
 
 namespace umigv {
 namespace ranges {
@@ -94,7 +94,7 @@ private:
     I current_;
     I last_;
     T index_{ };
-    mutable boost::optional<std::pair<T, iterator_reference_t<I>>> data_;
+    mutable type_safe::optional<std::pair<T, iterator_reference_t<I>>> data_;
 };
 
 template <typename I, typename T>
