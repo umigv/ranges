@@ -8,9 +8,10 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-find_package(Boost REQUIRED)
+add_subdirectory(type_safe)
+set(type_safe_INCLUDE_DIRS type_safe/include/ type_safe/external/debug_assert)
 
-include_directories(include/ ${Boost_INCLUDE_DIRS})
+include_directories(include/ ${type_safe_INCLUDE_DIRS})
 
 if (UMIGV_RANGES_BUILD_TESTS)
     set(__CFLAGS "${CMAKE_C_FLAGS}")
@@ -25,8 +26,7 @@ if (UMIGV_RANGES_BUILD_TESTS)
 
     enable_testing()
 
-    include_directories(include/ ${Boost_INCLUDE_DIRS}
-                                 ${gtest_SOURCE_DIR}/include/)
+    include_directories(${gtest_INCLUDE_DIRS})
 
     add_executable(test_range_adapter test/range_adapter.cpp)
     target_link_libraries(test_range_adapter gtest gtest_main)
