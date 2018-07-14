@@ -8,7 +8,10 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-include_directories(include/)
+add_subdirectory(type_safe)
+set(type_safe_INCLUDE_DIRS type_safe/include/ type_safe/external/debug_assert)
+
+include_directories(include/ ${type_safe_INCLUDE_DIRS})
 
 if (UMIGV_RANGES_BUILD_TESTS)
     set(__CFLAGS "${CMAKE_C_FLAGS}")
@@ -23,7 +26,7 @@ if (UMIGV_RANGES_BUILD_TESTS)
 
     enable_testing()
 
-    include_directories(include/ ${gtest_SOURCE_DIR}/include/)
+    include_directories(${gtest_INCLUDE_DIRS})
 
     add_executable(test_range_adapter test/range_adapter.cpp)
     target_link_libraries(test_range_adapter gtest gtest_main)
@@ -46,6 +49,9 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_executable(test_apply test/apply.cpp)
     target_link_libraries(test_apply gtest gtest_main)
 
+    add_executable(test_enumerated_range test/enumerated_range.cpp)
+    target_link_libraries(test_enumerated_range gtest gtest_main)
+
     add_test(TestRangeAdapter test_range_adapter)
     add_test(TestMappedRange test_mapped_range)
     add_test(TestFilteredRange test_filtered_range)
@@ -53,6 +59,7 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_test(TestCollect test_collect)
     add_test(TestConstIterator test_const_iterator)
     add_test(TestApply test_apply)
+    add_test(TestEnumeratedRange test_enumerated_range)
 endif()
 
 install(DIRECTORY include/ DESTINATION include/umigv/ranges)

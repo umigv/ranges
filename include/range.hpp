@@ -3,6 +3,7 @@
 
 #include "collect.hpp"
 #include "const_iterator.hpp"
+#include "enumerated_range.hpp"
 #include "filtered_range.hpp"
 #include "mapped_range.hpp"
 #include "range_adapter.hpp"
@@ -54,6 +55,14 @@ public:
         ::umigv::ranges::filter(std::declval<Range>(), std::declval<P>())
     )) {
         return ::umigv::ranges::filter(*this, std::forward<P>(predicate));
+    }
+
+    template <typename T = std::size_t>
+    constexpr EnumeratedRange<iterator, T> enumerate()
+    noexcept(noexcept(
+        ::umigv::ranges::enumerate<T>(std::declval<Range>())
+    )) {
+        return ::umigv::ranges::enumerate<T>(*this);
     }
 
     constexpr Collectable<iterator> collect() const {

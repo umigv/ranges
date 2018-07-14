@@ -21,14 +21,8 @@ public:
     using reference = const iterator_reference_t<I>;
     using iterator_category = std::input_iterator_tag;
 
-    constexpr ConstIterator(const ConstIterator &other)
-    noexcept(std::is_nothrow_copy_constructible<I>::value) = default;
-
     constexpr explicit ConstIterator(const I &base)
     noexcept(std::is_nothrow_copy_constructible<I>::value) : base_{ base } { }
-
-    constexpr ConstIterator& operator=(const ConstIterator &other)
-    noexcept(std::is_nothrow_copy_constructible<I>::value) = default;
 
     constexpr reference operator*() const {
         return *base_;
