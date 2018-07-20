@@ -9,5 +9,6 @@
 #include "mapped_range.hpp"
 #include "range.hpp"
 #include "range_adapter.hpp"
+#include "zipped_range.hpp"
 
 #endif

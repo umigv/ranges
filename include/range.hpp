@@ -8,6 +8,7 @@
 #include "mapped_range.hpp"
 #include "range_adapter.hpp"
 #include "range_fwd.hpp"
+#include "zipped_range.hpp"
 
 #include <type_traits>
 #include <utility>
@@ -63,6 +64,14 @@ public:
         ::umigv::ranges::enumerate<T>(std::declval<Range>())
     )) {
         return ::umigv::ranges::enumerate<T>(*this);
+    }
+
+    template <typename ...Rs>
+    constexpr decltype(auto) zip(Rs &&...ranges)
+    noexcept(noexcept(
+        ::umigv::ranges::zip(std::declval<Range>(), std::declval<Rs>()...)
+    )) {
+        return ::umigv::ranges::zip(*this, std::forward<Rs>(ranges)...);
     }
 
     constexpr Collectable<iterator> collect() const {
