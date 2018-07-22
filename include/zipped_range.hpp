@@ -30,7 +30,7 @@ public:
         std::tuple<iterator_value_t<std::tuple_element_t<Is, T>>...>;
 
     constexpr reference operator*() const {
-        return { (*std::get<Is>(currents_))... };
+        return reference{ (*std::get<Is>(currents_))... };
     }
 
     constexpr ZippedRangeIterator& operator++() {
