@@ -43,7 +43,7 @@ namespace umigv {
 namespace ranges {
 
 template <typename I>
-class Iterator {
+class InputIterator {
 public:
     using difference_type = iterator_difference_t<I>;
     using iterator_category = iterator_category_t<I>;
@@ -106,7 +106,7 @@ private:
 };
 
 template <typename I>
-class ForwardIterator : public Iterator<I> {
+class ForwardIterator : public InputIterator<I> {
 public:
     using difference_type = iterator_difference_t<I>;
     using iterator_category = iterator_category_t<I>;
