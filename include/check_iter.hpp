@@ -50,7 +50,7 @@ public:
                   "I must be a random access iterator");
 
     using difference_type = iterator_difference_t<I>;
-    using iterator_category = iterator_category_t<I>;
+    using iterator_category = std::random_access_iterator_tag;
     using pointer = iterator_pointer_t<I>;
     using reference = iterator_reference_t<I>;
     using value_type = iterator_value_t<I>;
@@ -152,7 +152,7 @@ public:
                   "I must be a bidirectional iterator");
 
     using difference_type = iterator_difference_t<I>;
-    using iterator_category = iterator_category_t<I>;
+    using iterator_category = std::bidirectional_iterator_tag;
     using pointer = iterator_pointer_t<I>;
     using reference = iterator_reference_t<I>;
     using value_type = iterator_value_t<I>;
@@ -204,12 +204,58 @@ private:
 };
 
 template <typename I>
-class InCheckIter : public ForwardIterator<InCheckIter<I>> {
+class FwdCheckIter : public ForwardIterator<FwdCheckIter<I>> {
+public:
+    static_assert(is_forward_iterator<I>::value, "I must be a forward iterator");
+
+    using difference_type = iterator_difference_t<I>;
+    using iterator_category = std::forward_iterator_tag;
+    using pointer = iterator_pointer_t<I>;
+    using reference = iterator_reference_t<I>;
+    using value_type = iterator_value_t<I>;
+
+    constexpr FwdCheckIter(const I&, const I &last, const I &current)
+    noexcept(std::is_nothrow_copy_constructible<I>::value)
+    : last_{ last }, current_{ current } { }
+
+    constexpr FwdCheckIter& next() {
+        if (current_ == last_) {
+            throw std::out_of_range{ "FwdCheckIter::next" };
+        }
+
+        ++current_;
+
+        return *this;
+    }
+
+    constexpr reference deref() const {
+        if (current_ == last_) {
+            throw std::out_of_range{ "FwdCheckIter::deref" };
+        }
+
+        return *current_;
+    }
+
+    constexpr bool is_equal(const FwdCheckIter &other) const {
+        if (last_ != other.last_) {
+            throw std::out_of_range{ "FwdCheckIter::is_equal" };
+        }
+
+        return current_ == other.current_;
+    }
+
+private:
+    I last_;
+    I current_;
+};
+
+template <typename I>
+class InCheckIter : public InputIterator<InCheckIter<I>> {
 public:
     static_assert(is_input_iterator<I>::value, "I must be an input iterator");
 
     using difference_type = iterator_difference_t<I>;
-    using iterator_category = iterator_category_t<I>;
+    using iterator_category = std::input_iterator_tag;
     using pointer = iterator_pointer_t<I>;
     using reference = iterator_reference_t<I>;
     using value_type = iterator_value_t<I>;
@@ -256,7 +302,11 @@ using CheckIter = std::conditional_t<
     std::conditional_t<
         is_bidirectional_iterator<T>::value,
         BiCheckIter<T>,
-        InCheckIter<T>
+        std::conditional_t<
+            is_forward_iterator<T>::value,
+            FwdCheckIter<T>,
+            InCheckIter<T>
+        >
     >
 >;
 
@@ -281,7 +331,7 @@ namespace std {
 template <typename I>
 struct iterator_traits<::umigv::ranges::RandCheckIter<I>> {
     using difference_type = typename iterator_traits<I>::difference_type;
-    using iterator_category = typename iterator_traits<I>::iterator_category;
+    using iterator_category = std::random_access_iterator_tag;
     using pointer = typename iterator_traits<I>::pointer;
     using reference = typename iterator_traits<I>::reference;
     using value_type = typename iterator_traits<I>::value_type;
@@ -290,7 +340,16 @@ struct iterator_traits<::umigv::ranges::RandCheckIter<I>> {
 template <typename I>
 struct iterator_traits<::umigv::ranges::BiCheckIter<I>> {
     using difference_type = typename iterator_traits<I>::difference_type;
-    using iterator_category = typename iterator_traits<I>::iterator_category;
+    using iterator_category = std::bidirectional_iterator_tag;
+    using pointer = typename iterator_traits<I>::pointer;
+    using reference = typename iterator_traits<I>::reference;
+    using value_type = typename iterator_traits<I>::value_type;
+};
+
+template <typename I>
+struct iterator_traits<::umigv::ranges::FwdCheckIter<I>> {
+    using difference_type = typename iterator_traits<I>::difference_type;
+    using iterator_category = std::forward_iterator_tag;
     using pointer = typename iterator_traits<I>::pointer;
     using reference = typename iterator_traits<I>::reference;
     using value_type = typename iterator_traits<I>::value_type;
@@ -299,7 +358,7 @@ struct iterator_traits<::umigv::ranges::BiCheckIter<I>> {
 template <typename I>
 struct iterator_traits<::umigv::ranges::InCheckIter<I>> {
     using difference_type = typename iterator_traits<I>::difference_type;
-    using iterator_category = typename iterator_traits<I>::iterator_category;
+    using iterator_category = std::input_iterator_tag;
     using pointer = typename iterator_traits<I>::pointer;
     using reference = typename iterator_traits<I>::reference;
     using value_type = typename iterator_traits<I>::value_type;
