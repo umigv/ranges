@@ -187,6 +187,10 @@ public:
         return as_base().distance(other);
     }
 
+    constexpr bool is_equal(const I &other) {
+        return !is_less_than(other) && !other.is_less_than(*this);
+    }
+
     constexpr bool is_less_than(const I &other) {
         return as_base().is_less_than(other);
     }
@@ -205,22 +209,16 @@ public:
         return copy.step(n).deref();
     }
 
-    friend constexpr I operator+(const I &iter, difference_type n) {
-        auto copy = iter;
-
-        return copy.step(n);
+    friend constexpr I operator+(I iter, difference_type n) {
+        return iter.step(n);
     }
 
-    friend constexpr I operator+(difference_type n, const I &iter) {
-        auto copy = iter;
-
-        return copy.step(n);
+    friend constexpr I operator+(difference_type n, I iter) {
+        return iter.step(n);
     }
 
-    friend constexpr I operator-(const I &iter, difference_type n) {
-        auto copy = iter;
-
-        return copy.step(-n);
+    friend constexpr I operator-(I iter, difference_type n) {
+        return iter.step(-n);
     }
 
     friend constexpr difference_type operator-(const I &lhs, const I &rhs) {
@@ -232,7 +230,7 @@ public:
     }
 
     friend constexpr bool operator<=(const I &lhs, const I &rhs) {
-        return lhs.is_equal(rhs) || lhs.is_less_than(rhs);
+        return !rhs.is_less_than(lhs);
     }
 
     friend constexpr bool operator>(const I &lhs, const I &rhs) {
@@ -240,7 +238,7 @@ public:
     }
 
     friend constexpr bool operator>=(const I &lhs, const I &rhs) {
-        return lhs.is_equal(rhs) || rhs.is_less_than(lhs);
+        return !lhs.is_less_than(rhs);
     }
 
 private:
