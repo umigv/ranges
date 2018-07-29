@@ -39,10 +39,6 @@
 #include <type_traits>
 #include <utility>
 
-#include <type_safe/optional.hpp>
-
-namespace ts = ::type_safe;
-
 namespace umigv {
 namespace ranges {
 
@@ -188,11 +184,11 @@ public:
     }
 
     constexpr bool is_equal(const I &other) {
-        return !is_less_than(other) && !other.is_less_than(*this);
+        return !is_less(other) && !other.is_less(*this);
     }
 
-    constexpr bool is_less_than(const I &other) {
-        return as_base().is_less_than(other);
+    constexpr bool is_less(const I &other) {
+        return as_base().is_less(other);
     }
 
     constexpr I& operator+=(difference_type n) {
@@ -226,19 +222,19 @@ public:
     }
 
     friend constexpr bool operator<(const I &lhs, const I &rhs) {
-        return lhs.is_less_than(rhs);
+        return lhs.is_less(rhs);
     }
 
     friend constexpr bool operator<=(const I &lhs, const I &rhs) {
-        return !rhs.is_less_than(lhs);
+        return !rhs.is_less(lhs);
     }
 
     friend constexpr bool operator>(const I &lhs, const I &rhs) {
-        return rhs.is_less_than(lhs);
+        return rhs.is_less(lhs);
     }
 
     friend constexpr bool operator>=(const I &lhs, const I &rhs) {
-        return !lhs.is_less_than(rhs);
+        return !lhs.is_less(rhs);
     }
 
 private:
@@ -257,6 +253,14 @@ private:
     constexpr const I&& as_base() const && noexcept {
         return static_cast<const I&&>(*this);
     }
+};
+
+template <typename I>
+struct IterPair {
+    static_assert(is_iterator<I>::value, "I must be an iterator");
+
+    I first;
+    I last;
 };
 
 } // namespace ranges
