@@ -33,7 +33,7 @@
 #define UMIGV_RANGES_RANGE_HPP
 
 #include "collect.hpp"
-#include "const_iterator.hpp"
+#include "const_iter.hpp"
 #include "enumerated_range.hpp"
 #include "filtered_range.hpp"
 #include "mapped_range.hpp"
@@ -50,7 +50,7 @@ namespace ranges {
 template <typename R>
 class Range {
 public:
-    using const_iterator = ConstIterator<typename RangeTraits<R>::iterator>;
+    using const_iterator = ConstIter<typename RangeTraits<R>::iterator>;
     using difference_type = typename RangeTraits<R>::difference_type;
     using iterator = typename RangeTraits<R>::iterator;
     using pointer = typename RangeTraits<R>::pointer;
@@ -120,7 +120,7 @@ public:
         return C(begin(), end());
     }
 
-    constexpr RangeAdapter<ConstIterator<iterator>> as_const() const noexcept {
+    constexpr RangeAdapter<const_iterator> as_const() const noexcept {
         return ::umigv::ranges::adapt(cbegin(), cend());
     }
 
