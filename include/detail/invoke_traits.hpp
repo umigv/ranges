@@ -37,9 +37,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace umigv {
-namespace ranges {
-namespace detail {
+namespace umigv_ranges_invoke_detail {
 
 struct member_function_ref_tag { };
 
@@ -57,7 +55,7 @@ struct invoke_traits { };
 template <typename T, typename U, typename V, typename ...Args>
 struct invoke_traits<
     T U::*,
-    void_t<decltype(
+    umigv::ranges::void_t<decltype(
         (std::declval<V>().*std::declval<T U::*>())(std::declval<Args>()...)
     ), std::enable_if_t<std::is_member_function_pointer<T U::*>::value>,
     std::enable_if_t<std::is_base_of<U, std::decay_t<V>>::value>>,
@@ -76,7 +74,7 @@ struct invoke_traits<
 template <typename T, typename U, typename ...Args>
 struct invoke_traits<
     T,
-    void_t<decltype(
+    umigv::ranges::void_t<decltype(
         ((*std::declval<U>()).*std::declval<T>())(
             std::declval<Args>()...
         )
@@ -100,7 +98,7 @@ struct invoke_traits<
 template <typename T, typename U, typename V>
 struct invoke_traits<
     T U::*,
-    void_t<decltype(
+    umigv::ranges::void_t<decltype(
         std::declval<V>().*std::declval<T U::*>()
     ), std::enable_if_t<std::is_member_object_pointer<T U::*>::value>,
     std::enable_if_t<std::is_base_of<U, std::decay_t<V>>::value>>,
@@ -119,7 +117,7 @@ struct invoke_traits<
 template <typename T, typename U>
 struct invoke_traits<
     T,
-    void_t<decltype(
+    umigv::ranges::void_t<decltype(
         (*std::declval<U>()).*std::declval<T>()
     ), std::enable_if_t<std::is_member_object_pointer<T>::value>>,
     U
@@ -137,7 +135,7 @@ struct invoke_traits<
 template <typename T, typename ...Args>
 struct invoke_traits<
     T,
-    void_t<decltype(
+    umigv::ranges::void_t<decltype(
         std::declval<T>()(std::declval<Args>()...)
     )>,
     Args...
@@ -152,8 +150,6 @@ struct invoke_traits<
     );
 };
 
-} // namespace detail
-} // namespace ranges
-} // namespace umigv
+} // namespace umigv_ranges_invoke_detail
 
 #endif

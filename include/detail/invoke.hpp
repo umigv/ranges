@@ -37,16 +37,16 @@
 
 #include <type_traits>
 
-namespace umigv {
-namespace ranges {
-namespace detail {
+namespace umigv_ranges_invoke_detail {
 
 template <typename T, typename, typename ...As>
 struct invoke_result { };
 
 template <typename T, typename ...As>
 struct invoke_result<
-    T, void_t<typename invoke_traits<T, void, As...>::result>, As...
+    T,
+    umigv::ranges::void_t<typename invoke_traits<T, void, As...>::result>,
+    As...
 > {
     using type = typename invoke_traits<T, void, As...>::result;
 };
@@ -56,7 +56,9 @@ struct is_invocable : std::false_type { };
 
 template <typename T, typename ...As>
 struct is_invocable<
-    T, void_t<typename invoke_traits<T, void, As...>::result>, As...
+    T,
+    umigv::ranges::void_t<typename invoke_traits<T, void, As...>::result>,
+    As...
 > : std::true_type { };
 
 template <typename T, typename, typename ...As>
@@ -64,7 +66,7 @@ struct is_nothrow_invocable : std::false_type { };
 
 template <typename T, typename ...As>
 struct is_nothrow_invocable<
-    T, void_t<
+    T, umigv::ranges::void_t<
         typename invoke_traits<T, void, As...>::result,
         std::enable_if_t<invoke_traits<T, void, As...>::is_nothrow>
     >, As...
@@ -104,8 +106,6 @@ noexcept(is_nothrow_invocable<T, void, As...>::value) {
     return std::forward<T>(t)(std::forward<As>(args)...);
 }
 
-} // namespace detail
-} // namespace ranges
-} // namespace umigv
+} // namespace umigv_ranges_invoke_detail
 
 #endif
