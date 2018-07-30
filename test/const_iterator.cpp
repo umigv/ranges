@@ -33,6 +33,7 @@
 
 #include <cstddef>
 #include <iostream>
+#include <utility>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -43,34 +44,23 @@ struct A {
 
     constexpr A() noexcept = default;
 
-    A(A&) noexcept { ++mut_copy_count; };
+    constexpr bool is_const() noexcept {
+        return false;
+    }
 
-    A(const A&) noexcept { ++const_copy_count; };
-
-    A& operator=(A&) noexcept { ++mut_copy_count; return *this; }
-
-    A& operator=(const A&) noexcept { ++mut_copy_count; return *this; }
+    constexpr bool is_const() const noexcept {
+        return true;
+    }
 };
-
-std::size_t A::const_copy_count = 0;
-std::size_t A::mut_copy_count = 0;
 
 TEST(ConstIteratorTest, ConstAccessors) {
     std::array<A, 4> INPUT;
 
     const auto adapted = umigv::ranges::adapt(INPUT);
 
-    std::vector<A> v;
-    v.reserve(4);
-    v.assign(adapted.cbegin(), adapted.cend());
-
-    std::cerr << A::mut_copy_count << ' ' << A::const_copy_count << '\n';
-
-    EXPECT_EQ(A::mut_copy_count, 0);
-    EXPECT_EQ(A::const_copy_count, 4);
-
-    A::mut_copy_count = 0;
-    A::const_copy_count = 0;
+    for (auto &&elem : umigv::ranges::adapt(adapted.cbegin(), adapted.cend())) {
+        EXPECT_TRUE(std::forward<decltype(elem)>(elem).is_const());
+    }
 }
 
 TEST(ConstIteratorTest, AsConst) {
@@ -78,15 +68,7 @@ TEST(ConstIteratorTest, AsConst) {
 
     const auto adapted = umigv::ranges::adapt(INPUT).as_const();
 
-    std::vector<A> v;
-    v.reserve(4);
-    v.assign(adapted.begin(), adapted.end());
-
-    std::cerr << A::mut_copy_count << ' ' << A::const_copy_count << '\n';
-
-    EXPECT_EQ(A::mut_copy_count, 0);
-    EXPECT_EQ(A::const_copy_count, 4);
-
-    A::mut_copy_count = 0;
-    A::const_copy_count = 0;
+    for (auto &&elem : adapted) {
+        EXPECT_TRUE(std::forward<decltype(elem)>(elem).is_const());
+    }
 }
