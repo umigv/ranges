@@ -297,6 +297,24 @@ template <class T, class... Ts>
 struct disjunction<T, Ts...>
 : std::conditional_t<static_cast<bool>(T::value), T, disjunction<Ts...>> { };
 
+template <typename T>
+struct add_const {
+    using type = const T;
+};
+
+template <typename T>
+struct add_const<T&> {
+    using type = const T&;
+};
+
+template <typename T>
+struct add_const<T&&> {
+    using type = const T&&;
+};
+
+template <typename T>
+using add_const_t = typename add_const<T>::type;
+
 } // namespace ranges
 } // namespace umigv
 
