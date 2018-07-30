@@ -43,7 +43,7 @@ namespace umigv {
 namespace ranges {
 
 template <typename I>
-class RandConstIter : public RandMetaIter<RandConstIter<I>> {
+class RandConstIter : public MetaIter<RandConstIter<I>> {
 public:
     static_assert(is_random_access_iterator<I>::value,
                   "I must be a random access iterator");
@@ -87,7 +87,7 @@ private:
 };
 
 template <typename I>
-class BiConstIter : public BiMetaIter<BiConstIter<I>> {
+class BiConstIter : public MetaIter<BiConstIter<I>> {
 public:
     static_assert(is_bidirectional_iterator<I>::value,
                   "I must be a bidirectional iterator");
@@ -131,7 +131,7 @@ private:
 };
 
 template <typename I>
-class FwdConstIter : public FwdMetaIter<FwdConstIter<I>> {
+class FwdConstIter : public MetaIter<FwdConstIter<I>> {
 public:
     static_assert(is_forward_iterator<I>::value,
                   "I must be a forward iterator");
@@ -175,7 +175,7 @@ private:
 };
 
 template <typename I>
-class InConstIter : public InMetaIter<InConstIter<I>> {
+class InConstIter : public MetaIter<InConstIter<I>> {
 public:
     static_assert(is_input_iterator<I>::value,
                   "I must be an input iterator");
