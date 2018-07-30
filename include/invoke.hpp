@@ -67,33 +67,45 @@ constexpr unwrap_result_t<T> unwrap(std::reference_wrapper<T> t) noexcept {
 }
 
 template <typename T, typename ...As>
-using invoke_result =
-    detail::invoke_result<decompose_t<T>, void, unwrap_result_t<As>...>;
+using invoke_result = umigv_ranges_invoke_detail::invoke_result<
+    decompose_t<T>,
+    void,
+    unwrap_result_t<As>...
+>;
 
 template <typename T, typename ...As>
 using invoke_result_t = typename invoke_result<T, As...>::type;
 
 template <typename T, typename ...As>
-using is_invocable =
-    detail::is_invocable<decompose_t<T>, void, unwrap_result_t<As>...>;
+using is_invocable = umigv_ranges_invoke_detail::is_invocable<
+    decompose_t<T>,
+    void,
+    unwrap_result_t<As>...
+>;
 
 template <typename T, typename ...As>
-using is_nothrow_invocable =
-    detail::is_nothrow_invocable<decompose_t<T>, void, unwrap_result_t<As>...>;
+using is_nothrow_invocable = umigv_ranges_invoke_detail::is_nothrow_invocable<
+    decompose_t<T>,
+    void,
+    unwrap_result_t<As>...
+>;
 
 template <typename C, typename ...As,
           std::enable_if_t<is_invocable<C, As...>::value, int> = 0>
 constexpr invoke_result_t<C, unwrap_result_t<As>...> invoke(C &&c, As &&...args)
 noexcept(is_nothrow_invocable<C, As...>::value) {
-    using TraitsT = typename detail::invoke_traits<
+    using TraitsT = typename umigv_ranges_invoke_detail::invoke_traits<
         decompose_t<C>,
         void,
         unwrap_result_t<As>...
     >;
     using TypeT = typename TraitsT::type;
 
-    return detail::invoke(TypeT{ }, std::forward<C>(c),
-                          unwrap(std::forward<As>(args))...);
+    return umigv_ranges_invoke_detail::invoke(
+        TypeT{ },
+        std::forward<C>(c),
+        unwrap(std::forward<As>(args))...
+    );
 }
 
 } // namespace ranges
