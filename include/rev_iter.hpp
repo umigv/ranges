@@ -49,7 +49,7 @@ public:
                   "T must be a random access iterator");
 
     using difference_type = iterator_difference_t<T>;
-    using iterator_category = iterator_category_t<T>;
+    using iterator_category = std::random_access_iterator_tag;
     using pointer = iterator_pointer_t<T>;
     using reference = iterator_reference_t<T>;
     using value_type = iterator_value_t<T>;
@@ -101,7 +101,7 @@ public:
                   "T must be a bidirectional iterator");
 
     using difference_type = iterator_difference_t<T>;
-    using iterator_category = iterator_category_t<T>;
+    using iterator_category = std::bidirectional_iterator_tag;
     using pointer = iterator_pointer_t<T>;
     using reference = iterator_reference_t<T>;
     using value_type = iterator_value_t<T>;
@@ -159,18 +159,18 @@ constexpr IterPair<RevIter<T>> make_rev_iter(const T &first, const T &last) {
 namespace std {
 
 template <typename T>
-struct iterator_traits<::umigv::ranges::BiRevIter<T>> {
+struct iterator_traits<umigv::ranges::RandRevIter<T>> {
     using difference_type = typename iterator_traits<T>::difference_type;
-    using iterator_category = typename iterator_traits<T>::iterator_category;
+    using iterator_category = random_access_iterator_tag;
     using pointer = typename iterator_traits<T>::pointer;
     using reference = typename iterator_traits<T>::reference;
     using value_type = typename iterator_traits<T>::value_type;
 };
 
 template <typename T>
-struct iterator_traits<::umigv::ranges::RandRevIter<T>> {
+struct iterator_traits<umigv::ranges::BiRevIter<T>> {
     using difference_type = typename iterator_traits<T>::difference_type;
-    using iterator_category = typename iterator_traits<T>::iterator_category;
+    using iterator_category = bidirectional_iterator_tag;
     using pointer = typename iterator_traits<T>::pointer;
     using reference = typename iterator_traits<T>::reference;
     using value_type = typename iterator_traits<T>::value_type;
