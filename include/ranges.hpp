@@ -33,7 +33,6 @@
 #define UMIGV_RANGES_RANGES_HPP
 
 #include "collect.hpp"
-#include "const_iterator.hpp"
 #include "counting_range.hpp"
 #include "enumerated_range.hpp"
 #include "filtered_range.hpp"
