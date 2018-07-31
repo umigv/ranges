@@ -43,10 +43,10 @@ namespace umigv {
 namespace ranges {
 
 template <typename I>
-class RandConstIter : public MetaIter<RandConstIter<I>> {
+class ConstIter : public MetaIter<ConstIter<I>> {
 public:
-    static_assert(is_random_access_iterator<I>::value,
-                  "I must be a random access iterator");
+    static_assert(is_input_iterator<I>::value,
+                  "I must be an input iterator");
 
     using difference_type = iterator_difference_t<I>;
     using iterator_category = std::random_access_iterator_tag;
@@ -56,9 +56,9 @@ public:
     using reference = add_const_t<iterator_reference_t<I>>;
     using value_type = iterator_value_t<I>;
 
-    friend MetaIter<RandConstIter<I>>;
+    friend MetaIter<ConstIter<I>>;
 
-    constexpr RandConstIter(const I &current)
+    constexpr ConstIter(const I &current)
     noexcept(std::is_nothrow_copy_constructible<I>::value)
     : current_{ current } { }
 
@@ -85,153 +85,6 @@ private:
 
     I current_;
 };
-
-template <typename I>
-class BiConstIter : public MetaIter<BiConstIter<I>> {
-public:
-    static_assert(is_bidirectional_iterator<I>::value,
-                  "I must be a bidirectional iterator");
-
-    friend MetaIter<BiConstIter<I>>;
-
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = std::bidirectional_iterator_tag;
-    using pointer = std::add_pointer_t<add_const_t<
-        std::remove_pointer_t<iterator_pointer_t<I>>
-    >>;
-    using reference = add_const_t<iterator_reference_t<I>>;
-    using value_type = iterator_value_t<I>;
-
-    constexpr BiConstIter(const I &current)
-    noexcept(std::is_nothrow_copy_constructible<I>::value)
-    : current_{ current } { }
-
-    constexpr reference deref() const {
-        return static_cast<reference>(*current_);
-    }
-
-private:
-    constexpr I& underlying() & noexcept {
-        return current_;
-    }
-
-    constexpr const I& underlying() const & noexcept {
-        return current_;
-    }
-
-    constexpr I&& underlying() && noexcept {
-        return current_;
-    }
-
-    constexpr const I&& underlying() const && noexcept {
-        return current_;
-    }
-
-    I current_;
-};
-
-template <typename I>
-class FwdConstIter : public MetaIter<FwdConstIter<I>> {
-public:
-    static_assert(is_forward_iterator<I>::value,
-                  "I must be a forward iterator");
-
-    friend MetaIter<FwdConstIter<I>>;
-
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = std::forward_iterator_tag;
-    using pointer = std::add_pointer_t<add_const_t<
-        std::remove_pointer_t<iterator_pointer_t<I>>
-    >>;
-    using reference = add_const_t<iterator_reference_t<I>>;
-    using value_type = iterator_value_t<I>;
-
-    constexpr FwdConstIter(const I &current)
-    noexcept(std::is_nothrow_copy_constructible<I>::value)
-    : current_{ current } { }
-
-    constexpr reference deref() const {
-        return static_cast<reference>(*current_);
-    }
-
-private:
-    constexpr I& underlying() & noexcept {
-        return current_;
-    }
-
-    constexpr const I& underlying() const & noexcept {
-        return current_;
-    }
-
-    constexpr I&& underlying() && noexcept {
-        return current_;
-    }
-
-    constexpr const I&& underlying() const && noexcept {
-        return current_;
-    }
-
-    I current_;
-};
-
-template <typename I>
-class InConstIter : public MetaIter<InConstIter<I>> {
-public:
-    static_assert(is_input_iterator<I>::value,
-                  "I must be an input iterator");
-
-    friend MetaIter<InConstIter<I>>;
-
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = std::input_iterator_tag;
-    using pointer = std::add_pointer_t<add_const_t<
-        std::remove_pointer_t<iterator_pointer_t<I>>
-    >>;
-    using reference = add_const_t<iterator_reference_t<I>>;
-    using value_type = iterator_value_t<I>;
-
-    constexpr InConstIter(const I &current)
-    noexcept(std::is_nothrow_copy_constructible<I>::value)
-    : current_{ current } { }
-
-    constexpr reference deref() const {
-        return static_cast<reference>(*current_);
-    }
-
-private:
-    constexpr I& underlying() & noexcept {
-        return current_;
-    }
-
-    constexpr const I& underlying() const & noexcept {
-        return current_;
-    }
-
-    constexpr I&& underlying() && noexcept {
-        return current_;
-    }
-
-    constexpr const I&& underlying() const && noexcept {
-        return current_;
-    }
-
-    I current_;
-};
-
-template <typename I>
-using ConstIter = std::conditional_t<
-    is_random_access_iterator<I>::value,
-    RandConstIter<I>,
-    std::conditional_t<
-        is_bidirectional_iterator<I>::value,
-        BiConstIter<I>,
-        std::conditional_t<
-            is_forward_iterator<I>::value,
-            FwdConstIter<I>,
-            InConstIter<I>
-        >
-    >
->;
 
 template <typename I>
 constexpr ConstIter<I> make_const_iter(const I &iter)
@@ -245,45 +98,9 @@ noexcept(std::is_nothrow_copy_constructible<I>::value) {
 namespace std {
 
 template <typename I>
-struct iterator_traits<umigv::ranges::RandConstIter<I>> {
+struct iterator_traits<umigv::ranges::ConstIter<I>> {
     using difference_type = typename iterator_traits<I>::difference_type;
-    using iterator_category = random_access_iterator_tag;
-    using pointer = std::add_pointer_t<umigv::ranges::add_const_t<
-        std::remove_pointer_t<typename iterator_traits<I>::pointer>
-    >>;
-    using reference =
-        umigv::ranges::add_const_t<typename iterator_traits<I>::reference>;
-    using value_type = typename iterator_traits<I>::value_type;
-};
-
-template <typename I>
-struct iterator_traits<umigv::ranges::BiConstIter<I>> {
-    using difference_type = typename iterator_traits<I>::difference_type;
-    using iterator_category = bidirectional_iterator_tag;
-    using pointer = std::add_pointer_t<umigv::ranges::add_const_t<
-        std::remove_pointer_t<typename iterator_traits<I>::pointer>
-    >>;
-    using reference =
-        umigv::ranges::add_const_t<typename iterator_traits<I>::reference>;
-    using value_type = typename iterator_traits<I>::value_type;
-};
-
-template <typename I>
-struct iterator_traits<umigv::ranges::FwdConstIter<I>> {
-    using difference_type = typename iterator_traits<I>::difference_type;
-    using iterator_category = forward_iterator_tag;
-    using pointer = std::add_pointer_t<umigv::ranges::add_const_t<
-        std::remove_pointer_t<typename iterator_traits<I>::pointer>
-    >>;
-    using reference =
-        umigv::ranges::add_const_t<typename iterator_traits<I>::reference>;
-    using value_type = typename iterator_traits<I>::value_type;
-};
-
-template <typename I>
-struct iterator_traits<umigv::ranges::InConstIter<I>> {
-    using difference_type = typename iterator_traits<I>::difference_type;
-    using iterator_category = input_iterator_tag;
+    using iterator_category = typename iterator_traits<I>::iterator_category;
     using pointer = std::add_pointer_t<umigv::ranges::add_const_t<
         std::remove_pointer_t<typename iterator_traits<I>::pointer>
     >>;
