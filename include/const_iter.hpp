@@ -92,6 +92,12 @@ noexcept(std::is_nothrow_copy_constructible<I>::value) {
     return ConstIter<I>{ iter };
 }
 
+template <typename I>
+constexpr IterPair<ConstIter<I>> make_const_iter(const I &first, const I &last)
+noexcept(std::is_nothrow_copy_constructible<I>::value) {
+    return { ConstIter<I>{ first }, ConstIter<I>{ last } };
+}
+
 } // namespace ranges
 } // namespace umigv
 
