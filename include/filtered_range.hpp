@@ -32,9 +32,8 @@
 #ifndef UMIGV_RANGES_FILTERED_RANGE_HPP
 #define UMIGV_RANGES_FILTERED_RANGE_HPP
 
-#include "detail/filtered_range.hpp"
-
 #include "apply.hpp"
+#include "filter_iter.hpp"
 #include "invoke.hpp"
 #include "range_fwd.hpp"
 #include "traits.hpp"
@@ -44,84 +43,7 @@
 namespace umigv {
 namespace ranges {
 
-template <typename I, typename P,
-          std::enable_if_t<detail::is_filterable<I, P>::value, int> = 0>
-class FilteredRange;
-
-template <typename I, typename P,
-          std::enable_if_t<detail::is_filterable<I, P>::value, int> = 0,
-          typename = void>
-class FilteredRangeIterator {
-public:
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = std::input_iterator_tag;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
-
-    friend FilteredRange<I, P>;
-
-    constexpr reference operator*() const {
-        if (current_ == last_) {
-            throw std::out_of_range{ "FilteredRangeIterator::operator*" };
-        }
-
-        return *current_;
-    }
-
-    constexpr pointer operator->() const {
-        return { std::addressof(**this) };
-    }
-
-    constexpr FilteredRangeIterator& operator++() {
-        if (current_ == last_) {
-            throw std::out_of_range{ "FilteredRangeIterator::operator++" };
-        }
-
-        ++current_;
-        detail::advance(current_, last_, predicate_);
-
-        return *this;
-    }
-
-    constexpr FilteredRangeIterator operator++(int) {
-        const FilteredRangeIterator to_return = *this;
-
-        ++(*this);
-
-        return to_return;
-    }
-
-    friend constexpr bool operator==(const FilteredRangeIterator &lhs,
-                                     const FilteredRangeIterator &rhs) {
-        if (!(lhs.last_ == rhs.last_)) {
-            throw std::out_of_range{ "FilteredRangeIterator::operator==" };
-        }
-
-        return lhs.current_ == rhs.current_;
-    }
-
-    friend constexpr bool operator!=(const FilteredRangeIterator &lhs,
-                                     const FilteredRangeIterator &rhs) {
-        return !(lhs == rhs);
-    }
-
-private:
-    constexpr FilteredRangeIterator(const I &current, const I &last,
-                                    const P &predicate)
-    noexcept(std::is_nothrow_copy_constructible<I>::value
-             && std::is_nothrow_copy_constructible<P>::value)
-    : current_{ current }, last_{ last }, predicate_{ predicate } {
-        detail::advance(current_, last_, predicate_);
-    }
-
-    I current_;
-    I last_;
-    P predicate_;
-};
-
-template <typename I, typename P,
-          std::enable_if_t<detail::is_filterable<I, P>::value, int>>
+template <typename I, typename P>
 class FilteredRange : public Range<FilteredRange<I, P>> {
 public:
     using difference_type =
@@ -134,24 +56,22 @@ public:
     constexpr FilteredRange(const I &first, const I &last, const P &predicate)
     noexcept(std::is_nothrow_copy_constructible<I>::value
              && std::is_nothrow_copy_constructible<P>::value)
-    : first_{ first }, last_{ last }, predicate_{ predicate } { }
+    : first_{ { first, last, first }, predicate },
+      last_{ { first, last, last }, predicate } { }
 
     constexpr iterator begin() const
-    noexcept(std::is_nothrow_copy_constructible<I>::value
-             && std::is_nothrow_copy_constructible<P>::value) {
-        return { first_, last_, predicate_ };
+    noexcept(std::is_nothrow_copy_constructible<iterator>::value) {
+        return first_;
     }
 
     constexpr iterator end() const
-    noexcept(std::is_nothrow_copy_constructible<I>::value
-             && std::is_nothrow_copy_constructible<P>::value) {
-        return { last_, last_, predicate_ };
+    noexcept(std::is_nothrow_copy_constructible<iterator>::value) {
+        return last_;
     }
 
 private:
-    I first_;
-    I last_;
-    P predicate_;
+    iterator first_;
+    iterator last_;
 };
 
 template <typename R, typename P>
@@ -170,11 +90,11 @@ noexcept(std::is_nothrow_copy_constructible<begin_result_t<R>>::value
 
 template <typename I, typename P>
 struct RangeTraits<FilteredRange<I, P>> {
-    using difference_type = iterator_difference_t<FilteredRangeIterator<I, P>>;
-    using iterator = FilteredRangeIterator<I, P>;
-    using pointer = iterator_pointer_t<FilteredRangeIterator<I, P>>;
-    using reference = iterator_reference_t<FilteredRangeIterator<I, P>>;
-    using value_type = iterator_value_t<FilteredRangeIterator<I, P>>;
+    using difference_type = iterator_difference_t<FilterIter<I, P>>;
+    using iterator = FilterIter<I, P>;
+    using pointer = iterator_pointer_t<FilterIter<I, P>>;
+    using reference = iterator_reference_t<FilterIter<I, P>>;
+    using value_type = iterator_value_t<FilterIter<I, P>>;
 };
 
 } // namespae ranges
