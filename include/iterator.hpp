@@ -67,6 +67,10 @@ public:
         return deref();
     }
 
+    constexpr pointer operator->() const {
+        return static_cast<pointer>(std::addressof(deref()));
+    }
+
     constexpr I& operator++() {
         return next();
     }
