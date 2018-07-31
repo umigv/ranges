@@ -39,6 +39,7 @@
 #include "mapped_range.hpp"
 #include "range_adapter.hpp"
 #include "range_fwd.hpp"
+#include "reversed_range.hpp"
 #include "zipped_range.hpp"
 
 #include <type_traits>
@@ -78,7 +79,7 @@ public:
     noexcept(noexcept(
         ::umigv::ranges::map(std::declval<Range>(), std::declval<F>())
     )) {
-        return ::umigv::ranges::map(*this, std::forward<F>(f));
+        return ::umigv::ranges::map(as_base(), std::forward<F>(f));
     }
 
     template <typename P>
@@ -86,14 +87,14 @@ public:
     noexcept(noexcept(
         ::umigv::ranges::filter(std::declval<Range>(), std::declval<P>())
     )) {
-        return ::umigv::ranges::filter(*this, std::forward<P>(predicate));
+        return ::umigv::ranges::filter(as_base(), std::forward<P>(predicate));
     }
 
     constexpr EnumeratedRange<iterator> enumerate()
     noexcept(noexcept(
         ::umigv::ranges::enumerate(std::declval<Range>())
     )) {
-        return ::umigv::ranges::enumerate(*this);
+        return ::umigv::ranges::enumerate(as_base());
     }
 
     template <typename ...Rs>
@@ -101,7 +102,7 @@ public:
     noexcept(noexcept(
         ::umigv::ranges::zip(std::declval<Range>(), std::declval<Rs>()...)
     )) {
-        return ::umigv::ranges::zip(*this, std::forward<Rs>(ranges)...);
+        return ::umigv::ranges::zip(as_base(), std::forward<Rs>(ranges)...);
     }
 
     constexpr Collectable<iterator> collect() const {
@@ -121,6 +122,10 @@ public:
 
     constexpr RangeAdapter<const_iterator> as_const() const noexcept {
         return ::umigv::ranges::adapt(cbegin(), cend());
+    }
+
+    constexpr ReversedRange<iterator> rev() const noexcept {
+        return reverse(as_base());
     }
 
 private:
