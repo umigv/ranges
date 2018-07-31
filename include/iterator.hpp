@@ -263,6 +263,15 @@ struct IterPair {
     I last;
 };
 
+template <typename I>
+struct IterTriple {
+    static_assert(is_iterator<I>::value, "I must be an iterator");
+
+    I first;
+    I last;
+    I current;
+};
+
 } // namespace ranges
 } // namespace umigv
 
