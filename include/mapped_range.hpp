@@ -57,24 +57,21 @@ public:
     constexpr MappedRange(const I &first, const I &last, const F &f)
     noexcept(std::is_nothrow_copy_constructible<I>::value
              && std::is_nothrow_copy_constructible<F>::value)
-    : first_{ first }, last_{ last }, f_{ f } { }
+    : first_{ first, f }, last_{ last, f } { }
 
     constexpr iterator begin() const
-    noexcept(std::is_nothrow_copy_constructible<I>::value
-             && std::is_nothrow_copy_constructible<F>::value) {
-        return { first_, f_ };
+    noexcept(std::is_nothrow_copy_constructible<iterator>::value) {
+        return first_;
     }
 
     constexpr iterator end() const
-    noexcept(std::is_nothrow_copy_constructible<I>::value
-             && std::is_nothrow_copy_constructible<F>::value) {
-        return { last_, f_ };
+    noexcept(std::is_nothrow_copy_constructible<iterator>::value) {
+        return last_;
     }
 
 private:
-    I first_;
-    I last_;
-    F f_;
+    iterator first_;
+    iterator last_;
 };
 
 template <typename R, typename F>
