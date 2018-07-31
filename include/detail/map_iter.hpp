@@ -32,6 +32,12 @@
 #ifndef UMIGV_RANGES_DETAIL_MAP_ITER_HPP
 #define UMIGV_RANGES_DETAIL_MAP_ITER_HPP
 
+#include "../apply.hpp"
+#include "../invoke.hpp"
+
+#include <type_traits>
+#include <utility>
+
 namespace umigv {
 namespace ranges {
 namespace detail {
