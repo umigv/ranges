@@ -303,17 +303,137 @@ struct add_const {
 };
 
 template <typename T>
+using add_const_t = typename add_const<T>::type;
+
+template <typename T>
 struct add_const<T&> {
-    using type = const T&;
+    using type = add_const_t<T>&;
 };
 
 template <typename T>
 struct add_const<T&&> {
-    using type = const T&&;
+    using type = add_const_t<T>&&;
 };
 
-template <typename T>
-using add_const_t = typename add_const<T>::type;
+template <typename... Ts>
+struct add_const<std::tuple<Ts...>> {
+    using type = const std::tuple<add_const_t<Ts>...>;
+};
+
+template <typename... Ts>
+struct add_const<const std::tuple<Ts...>> {
+    using type = const std::tuple<add_const_t<Ts>...>;
+};
+
+template <typename... Ts>
+struct add_const<volatile std::tuple<Ts...>> {
+    using type = const volatile std::tuple<add_const_t<Ts>...>;
+};
+
+template <typename... Ts>
+struct add_const<const volatile std::tuple<Ts...>> {
+    using type = const volatile std::tuple<add_const_t<Ts>...>;
+};
+
+template <typename... Ts>
+struct add_const<std::tuple<Ts...>&> {
+    using type = const std::tuple<add_const_t<Ts>...>&;
+};
+
+template <typename... Ts>
+struct add_const<const std::tuple<Ts...>&> {
+    using type = const std::tuple<add_const_t<Ts>...>&;
+};
+
+template <typename... Ts>
+struct add_const<volatile std::tuple<Ts...>&> {
+    using type = const volatile std::tuple<add_const_t<Ts>...>&;
+};
+
+template <typename... Ts>
+struct add_const<const volatile std::tuple<Ts...>&> {
+    using type = const volatile std::tuple<add_const_t<Ts>...>&;
+};
+
+template <typename... Ts>
+struct add_const<std::tuple<Ts...>&&> {
+    using type = const std::tuple<add_const_t<Ts>...>&&;
+};
+
+template <typename... Ts>
+struct add_const<const std::tuple<Ts...>&&> {
+    using type = const std::tuple<add_const_t<Ts>...>&&;
+};
+
+template <typename... Ts>
+struct add_const<volatile std::tuple<Ts...>&&> {
+    using type = const volatile std::tuple<add_const_t<Ts>...>&&;
+};
+
+template <typename... Ts>
+struct add_const<const volatile std::tuple<Ts...>&&> {
+    using type = const volatile std::tuple<add_const_t<Ts>...>&&;
+};
+
+template <typename T, typename U>
+struct add_const<std::pair<T, U>> {
+    using type = const std::pair<add_const_t<T>, add_const_t<U>>;
+};
+
+template <typename T, typename U>
+struct add_const<const std::pair<T, U>> {
+    using type = const std::pair<add_const_t<T>, add_const_t<U>>;
+};
+
+template <typename T, typename U>
+struct add_const<volatile std::pair<T, U>> {
+    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>>;
+};
+
+template <typename T, typename U>
+struct add_const<const volatile std::pair<T, U>> {
+    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>>;
+};
+
+template <typename T, typename U>
+struct add_const<std::pair<T, U>&> {
+    using type = const std::pair<add_const_t<T>, add_const_t<U>&>;
+};
+
+template <typename T, typename U>
+struct add_const<const std::pair<T, U>&> {
+    using type = const std::pair<add_const_t<T>, add_const_t<U>&>;
+};
+
+template <typename T, typename U>
+struct add_const<volatile std::pair<T, U>&> {
+    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&>;
+};
+
+template <typename T, typename U>
+struct add_const<const volatile std::pair<T, U>&> {
+    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&>;
+};
+
+template <typename T, typename U>
+struct add_const<std::pair<T, U>&&> {
+    using type = const std::pair<add_const_t<T>, add_const_t<U>&&>;
+};
+
+template <typename T, typename U>
+struct add_const<const std::pair<T, U>&&> {
+    using type = const std::pair<add_const_t<T>, add_const_t<U>&&>;
+};
+
+template <typename T, typename U>
+struct add_const<volatile std::pair<T, U>&&> {
+    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&&>;
+};
+
+template <typename T, typename U>
+struct add_const<const volatile std::pair<T, U>&&> {
+    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&&>;
+};
 
 } // namespace ranges
 } // namespace umigv
