@@ -89,12 +89,11 @@ public:
         return ::umigv::ranges::filter(*this, std::forward<P>(predicate));
     }
 
-    template <typename T = std::size_t>
-    constexpr EnumeratedRange<iterator, T> enumerate()
+    constexpr EnumeratedRange<iterator> enumerate()
     noexcept(noexcept(
-        ::umigv::ranges::enumerate<T>(std::declval<Range>())
+        ::umigv::ranges::enumerate(std::declval<Range>())
     )) {
-        return ::umigv::ranges::enumerate<T>(*this);
+        return ::umigv::ranges::enumerate(*this);
     }
 
     template <typename ...Rs>
