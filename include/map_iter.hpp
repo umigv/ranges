@@ -99,6 +99,14 @@ noexcept(std::is_nothrow_copy_constructible<I>::value
     return { current, callable };
 }
 
+template <typename I, typename C>
+constexpr IterPair<MapIter<I, C>> make_map_iter(const I &first, const I &last,
+                                                const C &callable)
+noexcept(std::is_nothrow_copy_constructible<I>::value
+         && std::is_nothrow_copy_constructible<C>::value) {
+    return { { first, callable }, { last, callable } };
+}
+
 } // namespace ranges
 } // namespace umigv
 
