@@ -33,6 +33,7 @@
 #define UMIGV_RANGES_RANGE_ADAPTER_HPP
 
 #include "range_fwd.hpp"
+#include "range_traits.hpp"
 #include "traits.hpp"
 
 #include <initializer_list>
@@ -42,17 +43,18 @@
 namespace umigv {
 namespace ranges {
 
-template <typename I, std::enable_if_t<is_iterator<I>::value, int> = 0>
+template <typename I>
 class RangeAdapter : public Range<RangeAdapter<I>> {
 public:
-    using difference_type =
-        typename RangeTraits<RangeAdapter>::difference_type;
-    using iterator = typename RangeTraits<RangeAdapter>::iterator;
-    using pointer = typename RangeTraits<RangeAdapter>::pointer;
-    using reference = typename RangeTraits<RangeAdapter>::reference;
-    using value_type = typename RangeTraits<RangeAdapter>::value_type;
+    static_assert(IS_ITERATOR<I>, "I must be an iterator");
 
-    constexpr RangeAdapter(I first, I last)
+    using difference_type = RangeDiffT<RangeAdapter>;
+    using iterator = RangeIterT<RangeAdapter>;
+    using pointer = RangePtrT<RangeAdapter>;
+    using reference = RangeRefT<RangeAdapter>;
+    using value_type = RangeValT<RangeAdapter>;
+
+    constexpr RangeAdapter(const I &first, const I &last)
     : first_{ first }, last_{ last } { }
 
     constexpr iterator begin() const noexcept {
@@ -69,21 +71,24 @@ private:
 };
 
 template <typename I>
-constexpr RangeAdapter<I> adapt(I first, I last)
-noexcept {
+constexpr RangeAdapter<I> adapt(const I &first, const I &last)
+noexcept(std::is_nothrow_copy_constructible<T>::value) {
     return { first, last };
 }
 
 template <typename R>
-constexpr RangeAdapter<begin_result_t<R>> adapt(R &&r) noexcept {
+constexpr RangeAdapter<begin_result_t<R>> adapt(R &&range)
+noexcept(HAS_NOTHROW_BEGINEND<R>) {
+    static_assert(HAS_BEGINEND<R>, "R must have a begin and end");
+
     using std::begin;
     using std::end;
 
-    return { begin(std::forward<R>(r)), end(std::forward<R>(r)) };
+    return { begin(std::forward<R>(range)), end(std::forward<R>(range)) };
 }
 
 template <typename T>
-constexpr RangeAdapter<begin_result_t<std::initializer_list<T>>>
+constexpr RangeAdapter<RangeIterT<std::initializer_list<T>>>
 adapt(std::initializer_list<T> list) noexcept {
     using std::begin;
     using std::end;
@@ -93,11 +98,11 @@ adapt(std::initializer_list<T> list) noexcept {
 
 template <typename I>
 struct RangeTraits<RangeAdapter<I>> {
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator = I;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 };
 
 } // namespace ranges
