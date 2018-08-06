@@ -46,14 +46,13 @@ namespace ranges {
 template <typename I>
 class RandEnumIter : public MetaIter<RandEnumIter<I>> {
 public:
-    static_assert(is_random_access_iterator<I>::value,
-                  "I must be a random access iterator");
+    static_assert(IS_RAND_ITER<I>, "I must be a random access iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::random_access_iterator_tag;
-    using pointer = const std::pair<std::size_t, iterator_reference_t<I>>*;
-    using reference = std::pair<std::size_t, iterator_reference_t<I>>;
-    using value_type = std::pair<std::size_t, iterator_value_t<I>>;
+    using pointer = const std::pair<std::size_t, IterRefT<I>>*;
+    using reference = std::pair<std::size_t, IterRefT<I>>;
+    using value_type = std::pair<std::size_t, IterValT<I>>;
 
     friend MetaIter<RandEnumIter<I>>;
 
@@ -110,14 +109,13 @@ private:
 template <typename I>
 class BiEnumIter : public MetaIter<BiEnumIter<I>> {
 public:
-    static_assert(is_bidirectional_iterator<I>::value,
-                  "I must be a bidirectional iterator");
+    static_assert(IS_BIDIR_ITER<I>, "I must be a bidirectional iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::bidirectional_iterator_tag;
-    using pointer = const std::pair<std::size_t, iterator_reference_t<I>>*;
-    using reference = std::pair<std::size_t, iterator_reference_t<I>>;
-    using value_type = std::pair<std::size_t, iterator_value_t<I>>;
+    using pointer = const std::pair<std::size_t, IterRefT<I>>*;
+    using reference = std::pair<std::size_t, IterRefT<I>>;
+    using value_type = std::pair<std::size_t, IterValT<I>>;
 
     friend MetaIter<BiEnumIter<I>>;
 
@@ -167,14 +165,13 @@ private:
 template <typename I>
 class FwdEnumIter : public MetaIter<FwdEnumIter<I>> {
 public:
-    static_assert(is_forward_iterator<I>::value,
-                  "I must be a forward iterator");
+    static_assert(IS_FWD_ITER<I>, "I must be a forward iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::forward_iterator_tag;
-    using pointer = const std::pair<std::size_t, iterator_reference_t<I>>*;
-    using reference = std::pair<std::size_t, iterator_reference_t<I>>;
-    using value_type = std::pair<std::size_t, iterator_value_t<I>>;
+    using pointer = const std::pair<std::size_t, IterRefT<I>>*;
+    using reference = std::pair<std::size_t, IterRefT<I>>;
+    using value_type = std::pair<std::size_t, IterValT<I>>;
 
     friend MetaIter<FwdEnumIter<I>>;
 
@@ -217,14 +214,13 @@ private:
 template <typename I>
 class InEnumIter : public MetaIter<InEnumIter<I>> {
 public:
-    static_assert(is_input_iterator<I>::value,
-                  "I must be am input iterator");
+    static_assert(IS_IN_ITER<I>, "I must be am input iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::input_iterator_tag;
-    using pointer = const std::pair<std::size_t, iterator_reference_t<I>>*;
-    using reference = std::pair<std::size_t, iterator_reference_t<I>>;
-    using value_type = std::pair<std::size_t, iterator_value_t<I>>;
+    using pointer = const std::pair<std::size_t, IterRefT<I>>*;
+    using reference = std::pair<std::size_t, IterRefT<I>>;
+    using value_type = std::pair<std::size_t, IterValT<I>>;
 
     friend MetaIter<InEnumIter<I>>;
 
@@ -265,18 +261,12 @@ private:
 };
 
 template <typename I>
-using EnumIter = std::conditional_t<
-    is_random_access_iterator<I>::value,
+using EnumIter = RandIterSwitchT<
+    I,
     RandEnumIter<I>,
-    std::conditional_t<
-        is_bidirectional_iterator<I>::value,
-        BiEnumIter<I>,
-        std::conditional_t<
-            is_forward_iterator<I>::value,
-            FwdEnumIter<I>,
-            InEnumIter<I>
-        >
-    >
+    BiEnumIter<I>,
+    FwdEnumIter<I>,
+    InEnumIter<I>
 >;
 
 template <typename I>

@@ -44,67 +44,129 @@ namespace umigv {
 namespace ranges {
 
 template <typename T>
-struct unwrap_result {
+struct UnwrapRefResult {
     using type = T;
 };
 
 template <typename T>
-struct unwrap_result<std::reference_wrapper<T>> {
+struct UnwrapRefResult<std::reference_wrapper<T>> {
     using type = T&;
 };
 
 template <typename T>
-using unwrap_result_t = typename unwrap_result<T>::type;
+struct UnwrapRefResult<const std::reference_wrapper<T>> {
+    using type = T&;
+};
 
 template <typename T>
-constexpr unwrap_result_t<T> unwrap(T &&t) noexcept {
+struct UnwrapRefResult<volatile std::reference_wrapper<T>> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<const volatile std::reference_wrapper<T>> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<std::reference_wrapper<T>&> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<const std::reference_wrapper<T>&> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<volatile std::reference_wrapper<T>&> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<const volatile std::reference_wrapper<T>&> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<std::reference_wrapper<T>&&> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<const std::reference_wrapper<T>&&> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<volatile std::reference_wrapper<T>&&> {
+    using type = T&;
+};
+
+template <typename T>
+struct UnwrapRefResult<const volatile std::reference_wrapper<T>&&> {
+    using type = T&;
+};
+
+template <typename T>
+using UnwrapRefResultT = typename UnwrapRefResult<T>::type;
+
+template <typename T>
+constexpr T&& unwrap_ref(T &&t) noexcept {
     return std::forward<T>(t);
 }
 
 template <typename T>
-constexpr unwrap_result_t<T> unwrap(std::reference_wrapper<T> t) noexcept {
+constexpr T& unwrap_ref(std::reference_wrapper<T> t) noexcept {
     return t.get();
 }
 
 template <typename T, typename ...As>
-using invoke_result = umigv_ranges_invoke_detail::invoke_result<
-    decompose_t<T>,
+using InvokeResult = umigv_ranges_invoke_detail::invoke_result<
+    UnwrapPtrRefT<T>,
     void,
-    unwrap_result_t<As>...
+    UnwrapRefResultT<As>...
 >;
 
 template <typename T, typename ...As>
-using invoke_result_t = typename invoke_result<T, As...>::type;
+using InvokeResultT = typename InvokeResult<T, As...>::type;
 
 template <typename T, typename ...As>
-using is_invocable = umigv_ranges_invoke_detail::is_invocable<
-    decompose_t<T>,
+using IsInvocable = umigv_ranges_invoke_detail::is_invocable<
+    UnwrapPtrRefT<T>,
     void,
-    unwrap_result_t<As>...
+    UnwrapRefResultT<As>...
 >;
 
 template <typename T, typename ...As>
-using is_nothrow_invocable = umigv_ranges_invoke_detail::is_nothrow_invocable<
-    decompose_t<T>,
+constexpr bool IS_INVOCABLE = IsInvocable<T, As...>::value;
+
+template <typename T, typename ...As>
+using IsNothrowInvocable = umigv_ranges_invoke_detail::is_nothrow_invocable<
+    UnwrapPtrRefT<T>,
     void,
-    unwrap_result_t<As>...
+    UnwrapRefResultT<As>...
 >;
+
+
+template <typename T, typename ...As>
+constexpr bool IS_NOTHROW_INVOCABLE = IsNothrowInvocable<T, As...>::value;
 
 template <typename C, typename ...As,
-          std::enable_if_t<is_invocable<C, As...>::value, int> = 0>
-constexpr invoke_result_t<C, unwrap_result_t<As>...> invoke(C &&c, As &&...args)
-noexcept(is_nothrow_invocable<C, As...>::value) {
+          std::enable_if_t<IS_INVOCABLE<C, As...>, int> = 0>
+constexpr InvokeResultT<C, UnwrapRefResult<As>...> invoke(C &&c, As &&...args)
+noexcept(IS_NOTHROW_INVOCABLE<C, As...>) {
     using TraitsT = typename umigv_ranges_invoke_detail::invoke_traits<
-        decompose_t<C>,
+        UnwrapPtrRefT<C>,
         void,
-        unwrap_result_t<As>...
+        UnwrapRefResult<As>...
     >;
     using TypeT = typename TraitsT::type;
 
     return umigv_ranges_invoke_detail::invoke(
         TypeT{ },
         std::forward<C>(c),
-        unwrap(std::forward<As>(args))...
+        unwrap_ref(std::forward<As>(args))...
     );
 }
 

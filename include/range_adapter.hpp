@@ -32,6 +32,7 @@
 #ifndef UMIGV_RANGES_RANGE_ADAPTER_HPP
 #define UMIGV_RANGES_RANGE_ADAPTER_HPP
 
+#include "iterator_traits.hpp"
 #include "range_fwd.hpp"
 #include "range_traits.hpp"
 #include "traits.hpp"
@@ -46,7 +47,7 @@ namespace ranges {
 template <typename I>
 class RangeAdapter : public Range<RangeAdapter<I>> {
 public:
-    static_assert(IS_ITERATOR<I>, "I must be an iterator");
+    static_assert(IS_ITER<I>, "I must be an iterator");
 
     using difference_type = RangeDiffT<RangeAdapter>;
     using iterator = RangeIterT<RangeAdapter>;
@@ -72,13 +73,14 @@ private:
 
 template <typename I>
 constexpr RangeAdapter<I> adapt(const I &first, const I &last)
-noexcept(std::is_nothrow_copy_constructible<T>::value) {
+noexcept(std::is_nothrow_copy_constructible<I>::value) {
     return { first, last };
 }
 
 template <typename R>
-constexpr RangeAdapter<begin_result_t<R>> adapt(R &&range)
-noexcept(HAS_NOTHROW_BEGINEND<R>) {
+constexpr RangeAdapter<RangeIterT<R>> adapt(R &&range)
+noexcept(HAS_NOTHROW_BEGINEND<R>
+         && std::is_nothrow_copy_constructible<RangeIterT<R>>::value) {
     static_assert(HAS_BEGINEND<R>, "R must have a begin and end");
 
     using std::begin;

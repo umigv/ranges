@@ -54,7 +54,7 @@ struct IsIter<T, VoidT<
 template <typename T>
 constexpr bool IS_ITER = IsIter<T>::value;
 
-template <typename T, bool = IsIter<T>::value>
+template <typename T, bool = IS_ITER<T>>
 struct IterDiff { };
 
 template <typename T>
@@ -65,7 +65,7 @@ struct IterDiff<T, true> {
 template <typename T>
 using IterDiffT = typename IterDiff<T>::type;
 
-template <typename T, bool = IsIter<T>::value>
+template <typename T, bool = IS_ITER<T>>
 struct IterVal { };
 
 template <typename T>
@@ -76,7 +76,7 @@ struct IterVal<T, true> {
 template <typename T>
 using IterValT = typename IterVal<T>::type;
 
-template <typename T, bool = is_iterator<T>::value>
+template <typename T, bool = IS_ITER<T>>
 struct IterPtr { };
 
 template <typename T>
@@ -87,7 +87,7 @@ struct IterPtr<T, true> {
 template <typename T>
 using IterPtrT = typename IterPtr<T>::type;
 
-template <typename T, bool = is_iterator<T>::value>
+template <typename T, bool = IS_ITER<T>>
 struct IterRef { };
 
 template <typename T>
@@ -145,7 +145,7 @@ struct IsFwdIter<T, true> : TrueTypeIfT<std::is_base_of<
 template <typename T>
 constexpr bool IS_FWD_ITER = IsFwdIter<T>::value;
 
-template <typename T, bool = is_iterator<T>::value>
+template <typename T, bool = IS_ITER<T>>
 struct IsBidirIter : std::false_type { };
 
 template <typename T>
@@ -157,7 +157,7 @@ struct IsBidirIter<T, true> : TrueTypeIfT<std::is_base_of<
 template <typename T>
 constexpr bool IS_BIDIR_ITER = IsBidirIter<T>::value;
 
-template <typename T, bool = is_iterator<T>::value>
+template <typename T, bool = IS_ITER<T>>
 struct IsRandIter : std::false_type { };
 
 template <typename T>
@@ -187,7 +187,7 @@ struct RandIterSwitch {
 };
 
 template <typename T, typename Rand, typename Bidir, typename Fwd, typename In>
-using RandIterSwitchT = typename RandIterSwitch<T, Rand, Bidir, Fwd, In>;
+using RandIterSwitchT = typename RandIterSwitch<T, Rand, Bidir, Fwd, In>::type;
 
 template <typename T, typename Bidir, typename Fwd, typename In>
 struct BidirIterSwitch {
@@ -203,7 +203,7 @@ struct BidirIterSwitch {
 };
 
 template <typename T, typename Bidir, typename Fwd, typename In>
-using BidirIterSwitchT = typename BidirIterSwitch<T, Bidir, Fwd, In>;
+using BidirIterSwitchT = typename BidirIterSwitch<T, Bidir, Fwd, In>::type;
 
 template <typename T, typename Fwd, typename In>
 struct FwdIterSwitch {
@@ -215,7 +215,7 @@ struct FwdIterSwitch {
 };
 
 template <typename T, typename Fwd, typename In>
-using FwdIterSwitchT = typename FwdIterSwitch<T, Fwd, In>;
+using FwdIterSwitchT = typename FwdIterSwitch<T, Fwd, In>::type;
 
 } // namespace ranges
 } // namespace umigv

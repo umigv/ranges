@@ -59,7 +59,7 @@ struct RangeTraits<T[N]> {
 };
 
 template <typename T>
-struct HasBeginend : true_type_if_t<
+struct HasBeginend : TrueTypeIfT<
     umigv_ranges_detail_adl_traits::HasBegin<T>::value
     && umigv_ranges_detail_adl_traits::HasEnd<T>::value
 > { };
@@ -68,33 +68,91 @@ template <typename T>
 constexpr bool HAS_BEGINEND = HasBeginend<T>::value;
 
 template <typename T>
-struct HasNothrowBeginend : true_type_if_t<
+struct HasNothrowBeginend : TrueTypeIfT<
     umigv_ranges_detail_adl_traits::HasNothrowBegin<T>::value
-    && umigv_ranges_detail_adl_traits::HasNothrowBeginend<T>::value
+    && umigv_ranges_detail_adl_traits::HasNothrowEnd<T>::value
 > { };
+
+template <typename T>
+constexpr bool HAS_NOTHROW_BEGINEND = HasNothrowBeginend<T>::value;
 
 template <typename T, typename = void>
 struct HasRangeTraits : std::false_type { };
 
 template <typename T>
-struct HasRangeTraits<T, void_t<
-    typename RangeTraits::difference_type,
-    typename RangeTraits::iterator,
-    typename RangeTraits::pointer,
-    typename RangeTraits::reference,
-    typename RangeTraits::value_type
+struct HasRangeTraits<T, VoidT<
+    typename RangeTraits<T>::difference_type,
+    typename RangeTraits<T>::iterator,
+    typename RangeTraits<T>::pointer,
+    typename RangeTraits<T>::reference,
+    typename RangeTraits<T>::value_type
 >> : std::true_type { };
 
 template <typename T>
 constexpr bool HAS_RANGE_TRAITS = HasRangeTraits<T>::value;
 
+template <typename T, bool = HAS_RANGE_TRAITS<T>>
+struct RangeDiff { };
+
+template <typename T>
+struct RangeDiff<T, true> {
+    using type = typename RangeTraits<T>::difference_type;
+};
+
+template <typename T>
+using RangeDiffT = typename RangeDiff<T>::type;
+
+template <typename T, bool = HAS_RANGE_TRAITS<T>>
+struct RangeIter { };
+
+template <typename T>
+struct RangeIter<T, true> {
+    using type = typename RangeTraits<T>::iterator;
+};
+
+template <typename T>
+using RangeIterT = typename RangeIter<T>::type;
+
+template <typename T, bool = HAS_RANGE_TRAITS<T>>
+struct RangePtr { };
+
+template <typename T>
+struct RangePtr<T, true> {
+    using type = typename RangeTraits<T>::pointer;
+};
+
+template <typename T>
+using RangePtrT = typename RangePtr<T>::type;
+
+template <typename T, bool = HAS_RANGE_TRAITS<T>>
+struct RangeRef { };
+
+template <typename T>
+struct RangeRef<T, true> {
+    using type = typename RangeTraits<T>::reference;
+};
+
+template <typename T>
+using RangeRefT = typename RangeRef<T>::type;
+
+template <typename T, bool = HAS_RANGE_TRAITS<T>>
+struct RangeVal { };
+
+template <typename T>
+struct RangeVal<T, true> {
+    using type = typename RangeTraits<T>::value_type;
+};
+
+template <typename T>
+using RangeValT = typename RangeVal<T>::type;
+
 template <typename T>
 struct IsRange : TrueTypeIfT<
-    has_beginend<T>::value && has_range_traits<T>::value
+    HasBeginend<T>::value && HasRangeTraits<T>::value
 > { };
 
 template <typename T>
-constexpr bool IS_RANGE = IsRAnge<T>::value;
+constexpr bool IS_RANGE = IsRange<T>::value;
 
 } // namespace ranges
 } // namespace umigv

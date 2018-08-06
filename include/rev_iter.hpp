@@ -45,14 +45,13 @@ namespace ranges {
 template <typename T>
 class RandRevIter : public RandomAccessIterator<RandRevIter<T>> {
 public:
-    static_assert(is_random_access_iterator<T>::value,
-                  "T must be a random access iterator");
+    static_assert(IS_RAND_ITER<T>, "T must be a random access iterator");
 
-    using difference_type = iterator_difference_t<T>;
+    using difference_type = IterDiffT<T>;
     using iterator_category = std::random_access_iterator_tag;
-    using pointer = iterator_pointer_t<T>;
-    using reference = iterator_reference_t<T>;
-    using value_type = iterator_value_t<T>;
+    using pointer = IterPtrT<T>;
+    using reference = IterRefT<T>;
+    using value_type = IterValT<T>;
 
     constexpr explicit RandRevIter(T current) : base_{ current } { }
 
@@ -97,14 +96,13 @@ private:
 template <typename T>
 class BiRevIter : public BidirectionalIterator<BiRevIter<T>> {
 public:
-    static_assert(is_bidirectional_iterator<T>::value,
-                  "T must be a bidirectional iterator");
+    static_assert(IS_BIDIR_ITER<T>, "T must be a bidirectional iterator");
 
-    using difference_type = iterator_difference_t<T>;
+    using difference_type = IterDiffT<T>;
     using iterator_category = std::bidirectional_iterator_tag;
-    using pointer = iterator_pointer_t<T>;
-    using reference = iterator_reference_t<T>;
-    using value_type = iterator_value_t<T>;
+    using pointer = IterPtrT<T>;
+    using reference = IterRefT<T>;
+    using value_type = IterValT<T>;
 
     constexpr explicit BiRevIter(T current) : base_{ current } { }
 
@@ -138,7 +136,7 @@ private:
 
 template <typename T>
 using RevIter = std::conditional_t<
-    is_random_access_iterator<T>::value,
+    IS_RAND_ITER<T>,
     RandRevIter<T>,
     BiRevIter<T>
 >;

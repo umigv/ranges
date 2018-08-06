@@ -35,6 +35,7 @@
 #include "invoke.hpp"
 #include "map_iter.hpp"
 #include "range_fwd.hpp"
+#include "range_traits.hpp"
 
 #include <memory>
 #include <stdexcept>
@@ -48,11 +49,11 @@ class MappedRange : public Range<MappedRange<I, F>> {
     using IteratorT = MapIter<I, F>;
 
 public:
-    using difference_type = typename RangeTraits<MappedRange>::difference_type;
-    using iterator = typename RangeTraits<MappedRange>::iterator;
-    using pointer = typename RangeTraits<MappedRange>::pointer;
-    using reference = typename RangeTraits<MappedRange>::reference;
-    using value_type = typename RangeTraits<MappedRange>::value_type;
+    using difference_type = RangeDiffT<MappedRange>;
+    using iterator = RangeIterT<MappedRange>;
+    using pointer = RangePtrT<MappedRange>;
+    using reference = RangeRefT<MappedRange>;
+    using value_type = RangeValT<MappedRange>;
 
     constexpr MappedRange(const I &first, const I &last, const F &f)
     noexcept(std::is_nothrow_copy_constructible<I>::value
@@ -75,13 +76,14 @@ private:
 };
 
 template <typename R, typename F>
-constexpr decltype(auto) map(R &&range, F &&f)
-noexcept(std::is_nothrow_copy_constructible<begin_result_t<R>>::value
-         && std::is_nothrow_copy_constructible<F>::value) {
+constexpr MappedRange<RangeIterT<R>, RemoveCvrefT<F>> map(R &&range, F &&f)
+noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value
+         && std::is_nothrow_copy_constructible<RemoveCvrefT<F>>::value
+         && HAS_NOTHROW_BEGINEND<R>) {
     using std::begin;
     using std::end;
 
-    return MappedRange<begin_result_t<R>, std::decay_t<F>>{
+    return MappedRange<RangeIterT<R>, RemoveCvrefT<F>>{
         begin(std::forward<R>(range)),
         end(std::forward<R>(range)),
         std::forward<F>(f),
@@ -90,11 +92,11 @@ noexcept(std::is_nothrow_copy_constructible<begin_result_t<R>>::value
 
 template <typename I, typename F>
 struct RangeTraits<MappedRange<I, F>> {
-    using difference_type = iterator_difference_t<MapIter<I, F>>;
+    using difference_type = IterDiffT<MapIter<I, F>>;
     using iterator = MapIter<I, F>;
-    using pointer = iterator_pointer_t<MapIter<I, F>>;
-    using reference = iterator_reference_t<MapIter<I, F>>;
-    using value_type = iterator_value_t<MapIter<I, F>>;
+    using pointer = IterPtrT<MapIter<I, F>>;
+    using reference = IterRefT<MapIter<I, F>>;
+    using value_type = IterValT<MapIter<I, F>>;
 };
 
 } // namespace ranges

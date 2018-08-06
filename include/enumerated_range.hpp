@@ -33,7 +33,9 @@
 #define UMIGV_RANGES_ENUMERATED_RANGE_HPP
 
 #include "enum_iter.hpp"
+#include "iterator_traits.hpp"
 #include "range_fwd.hpp"
+#include "range_traits.hpp"
 #include "traits.hpp"
 
 #include <iterator>
@@ -49,12 +51,11 @@ namespace ranges {
 template <typename I>
 class EnumeratedRange : public Range<EnumeratedRange<I>> {
 public:
-    using difference_type =
-        typename RangeTraits<EnumeratedRange>::difference_type;
-    using iterator = typename RangeTraits<EnumeratedRange>::iterator;
-    using pointer = typename RangeTraits<EnumeratedRange>::pointer;
-    using reference = typename RangeTraits<EnumeratedRange>::reference;
-    using value_type = typename RangeTraits<EnumeratedRange>::value_type;
+    using difference_type = RangeDiffT<EnumeratedRange>;
+    using iterator = RangeIterT<EnumeratedRange>;
+    using pointer = RangePtrT<EnumeratedRange>;
+    using reference = RangeRefT<EnumeratedRange>;
+    using value_type = RangeValT<EnumeratedRange>;
 
     constexpr EnumeratedRange(const I &first, const I &last)
     noexcept(std::is_nothrow_copy_constructible<I>::value)
@@ -77,17 +78,17 @@ private:
 
 template <typename I>
 struct RangeTraits<EnumeratedRange<I>> {
-    using difference_type =
-        iterator_difference_t<EnumIter<I>>;
+    using difference_type = IterDiffT<EnumIter<I>>;
     using iterator = EnumIter<I>;
-    using pointer = iterator_pointer_t<EnumIter<I>>;
-    using reference = iterator_reference_t<EnumIter<I>>;
-    using value_type = iterator_value_t<EnumIter<I>>;
+    using pointer = IterPtrT<EnumIter<I>>;
+    using reference = IterRefT<EnumIter<I>>;
+    using value_type = IterValT<EnumIter<I>>;
 };
 
 template <typename R>
-EnumeratedRange<begin_result_t<R>> enumerate(R &&range)
-noexcept(std::is_nothrow_copy_constructible<begin_result_t<R>>::value) {
+EnumeratedRange<RangeIterT<R>> enumerate(R &&range)
+noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value
+         && HAS_NOTHROW_BEGINEND<R>) {
     using std::begin;
     using std::end;
 

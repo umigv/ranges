@@ -66,7 +66,7 @@ struct IsEqualityComparableWith : std::false_type { };
 template <typename T, typename U>
 struct IsEqualityComparableWith<T, U, VoidT<
     decltype(std::declval<T>() == std::declval<U>()),
-    decltype(std::declval<U>() == std::declval<T>()),
+    decltype(std::declval<U>() == std::declval<T>())
 >> : std::true_type { };
 
 template <typename T, typename U>
@@ -85,7 +85,7 @@ template <typename T, typename U, bool = IS_EQUALITY_COMPARABLE_WITH<T, U>>
 struct IsNothrowEqualityComparableWith : std::false_type { };
 
 template <typename T, typename U>
-struct IsNothrowEqualityComparableWith : TrueTypeIfT<
+struct IsNothrowEqualityComparableWith<T, U, true> : TrueTypeIfT<
     noexcept(std::declval<T>() == std::declval<U>())
     && noexcept(std::declval<U>() == std::declval<T>())
 > { };
@@ -146,7 +146,7 @@ template <typename ...Ts>
 constexpr bool DISJUNCTION = Disjunction<Ts...>::value;
 
 template <typename T>
-struct IsSwappable : true_type_if_t<
+struct IsSwappable : TrueTypeIfT<
     umigv_ranges_detail_adl_traits::IsSwappable<T>::value
 > { };
 
@@ -154,7 +154,7 @@ template <typename T>
 constexpr bool IS_SWAPPABLE = IsSwappable<T>::value;
 
 template <typename T, typename U>
-struct IsSwappableWith : true_type_if_t<
+struct IsSwappableWith : TrueTypeIfT<
     umigv_ranges_detail_adl_traits::IsSwappableWith<T, U>::value
 > { };
 
@@ -162,7 +162,7 @@ template <typename T, typename U>
 constexpr bool IS_SWAPPABLE_WITH = IsSwappableWith<T, U>::value;
 
 template <typename T>
-struct IsNothrowSwappable : true_type_if_t<
+struct IsNothrowSwappable : TrueTypeIfT<
     umigv_ranges_detail_adl_traits::IsNothrowSwappable<T>::value
 > { };
 
@@ -170,12 +170,29 @@ template <typename T>
 constexpr bool IS_NOTHROW_SWAPPABLE = IsNothrowSwappable<T>::value;
 
 template <typename T, typename U>
-struct IsNothrowSwappableWith : true_type_if_t<
+struct IsNothrowSwappableWith : TrueTypeIfT<
     umigv_ranges_detail_adl_traits::IsNothrowSwappableWith<T, U>::value
 > { };
 
 template <typename T, typename U>
 constexpr bool IS_NOTHROW_SWAPPABLE_WITH = IsNothrowSwappableWith<T, U>::value;
+
+template <
+    typename T,
+    bool = std::is_pointer<std::remove_reference_t<T>>::value
+           || std::is_member_pointer<std::remove_reference_t<T>>::value
+>
+struct UnwrapPtrRef {
+    using type = T;
+};
+
+template <typename T>
+struct UnwrapPtrRef<T, true> {
+    using type = std::remove_reference_t<T>;
+};
+
+template <typename T>
+using UnwrapPtrRefT = typename UnwrapPtrRef<T>::type;
 
 } // namespace ranges
 } // namespace umigv

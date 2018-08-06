@@ -32,8 +32,10 @@
 #ifndef UMIGV_RANGES_COUNTING_RANGE_HPP
 #define UMIGV_RANGES_COUNTING_RANGE_HPP
 
-#include "range_fwd.hpp"
 #include "count_iter.hpp"
+#include "iterator_traits.hpp"
+#include "range_fwd.hpp"
+#include "range_traits.hpp"
 
 namespace umigv {
 namespace ranges {
@@ -41,12 +43,11 @@ namespace ranges {
 template <typename T>
 class CountingRange : public Range<CountingRange<T>> {
 public:
-    using difference_type =
-        typename RangeTraits<CountingRange>::difference_type;
-    using iterator = typename RangeTraits<CountingRange>::iterator;
-    using pointer = typename RangeTraits<CountingRange>::pointer;
-    using reference = typename RangeTraits<CountingRange>::reference;
-    using value_type = typename RangeTraits<CountingRange>::value_type;
+    using difference_type = RangeDiffT<CountingRange>;
+    using iterator = RangeIterT<CountingRange>;
+    using pointer = RangePtrT<CountingRange>;
+    using reference = RangeRefT<CountingRange>;
+    using value_type = RangeValT<CountingRange>;
 
     constexpr explicit CountingRange(const T &end) noexcept
     : CountingRange{ 0, 1, end } { }
@@ -90,11 +91,11 @@ constexpr CountingRange<T> range(const T &begin, const T &step,
 
 template <typename T>
 struct RangeTraits<CountingRange<T>> {
-    using difference_type = iterator_difference_t<CountIter<T>>;
+    using difference_type = IterDiffT<CountIter<T>>;
     using iterator = CountIter<T>;
-    using pointer = iterator_pointer_t<CountIter<T>>;
-    using reference = iterator_reference_t<CountIter<T>>;
-    using value_type = iterator_value_t<CountIter<T>>;
+    using pointer = IterPtrT<CountIter<T>>;
+    using reference = IterRefT<CountIter<T>>;
+    using value_type = IterValT<CountIter<T>>;
 };
 
 } // namespace ranges

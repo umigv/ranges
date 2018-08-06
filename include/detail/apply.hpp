@@ -32,12 +32,13 @@
 #ifndef UMIGV_RANGES_DETAIL_APPLY_HPP
 #define UMIGV_RANGES_DETAIL_APPLY_HPP
 
+#include "../invoke.hpp"
+#include "../tuple_traits.hpp"
+
 #include <cstddef>
 #include <tuple>
 #include <type_traits>
 #include <utility>
-
-#include "../invoke.hpp"
 
 namespace umigv_ranges_apply_detail {
 
@@ -48,10 +49,10 @@ template <typename C, typename T, std::size_t ...Is>
 struct is_applicable<
     C,
     T,
-    umigv::ranges::void_t<std::enable_if_t<
-        umigv::ranges::is_invocable<
-            C&&, umigv::ranges::tuple_element_t<Is, T>...
-        >::value
+    umigv::ranges::VoidT<std::enable_if_t<
+        umigv::ranges::IS_INVOCABLE<
+            C&&, umigv::ranges::GetResultT<Is, T>...
+        >
     >>,
     Is...
 > : std::true_type { };
@@ -67,10 +68,10 @@ template <typename C, typename T, std::size_t ...Is>
 struct is_nothrow_applicable<
     C,
     T,
-    umigv::ranges::void_t<std::enable_if_t<
-        umigv::ranges::is_nothrow_invocable<
-            C&&, umigv::ranges::tuple_element_t<Is, T>...
-        >::value
+    umigv::ranges::VoidT<std::enable_if_t<
+        umigv::ranges::IS_NOTHROW_INVOCABLE<
+            C&&, umigv::ranges::GetResultT<Is, T>...
+        >
     >>,
     Is...
 > : std::true_type { };
@@ -86,14 +87,14 @@ template <typename C, typename T, std::size_t ...Is>
 struct apply_result<
     C,
     T,
-    umigv::ranges::void_t<
+    umigv::ranges::VoidT<
         std::enable_if_t<is_applicable<C&&, T&&, void, Is...>::value>
     >,
     Is...
 > {
-    using type = umigv::ranges::invoke_result_t<
+    using type = umigv::ranges::InvokeResultT<
         C&&,
-        umigv::ranges::tuple_element_t<Is, T>...
+        umigv::ranges::GetResultT<Is, T>...
     >;
 };
 
@@ -102,15 +103,15 @@ constexpr apply_result<C&&, T&&, void, Is...>
 check_apply_result(C&&, T&&, std::index_sequence<Is...>) noexcept;
 
 template <typename C, typename T, std::size_t ...Is>
-constexpr umigv::ranges::invoke_result_t<
+constexpr umigv::ranges::InvokeResultT<
     C&&,
-    umigv::ranges::tuple_element_t<Is, T&&>...
+    umigv::ranges::GetResultT<Is, T&&>...
 >
 apply(C &&callable, T &&tuple, std::index_sequence<Is...>)
-noexcept(umigv::ranges::is_nothrow_invocable<
+noexcept(umigv::ranges::IS_NOTHROW_INVOCABLE<
     C&&,
-    umigv::ranges::tuple_element_t<Is, T&&>...>::value
-) {
+    umigv::ranges::GetResultT<Is, T&&>...
+>) {
     return umigv::ranges::invoke(std::forward<C>(callable),
                                  std::get<Is>(std::forward<T>(tuple))...);
 }

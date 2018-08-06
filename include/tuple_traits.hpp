@@ -32,6 +32,8 @@
 #ifndef UMIGV_RANGES_TUPLE_TRAITS_HPP
 #define UMIGV_RANGES_TUPLE_TRAITS_HPP
 
+#include "detail/tuple_traits.hpp"
+
 #include "traits.hpp"
 
 namespace umigv {
@@ -42,7 +44,7 @@ struct IsTuple : std::false_type { };
 
 template <typename T>
 struct IsTuple<T, VoidT<
-    decltype(umigv_ranges_detail_tuple_traits::tuple_size<
+    decltype(umigv_ranges_detail_tuple_traits::TupleSize<
         std::add_const<T>
     >::value)
 >> : std::true_type { };
@@ -59,6 +61,17 @@ struct TupleSize<T, true>
 
 template <typename T>
 constexpr std::size_t TUPLE_SIZE = TupleSize<T>::value;
+
+template <std::size_t I, typename T, typename = void>
+struct IsGettable : std::false_type { };
+
+template <std::size_t I, typename T>
+struct IsGettable<I, T, VoidT<
+    decltype(std::get<I>(std::declval<T>()))
+>> : std::true_type { };
+
+template <std::size_t I, typename T>
+constexpr bool IS_GETTABLE = IsGettable<I, T>::value;
 
 template <std::size_t I, typename T, bool = IS_GETTABLE<I, T>>
 struct GetResult { };

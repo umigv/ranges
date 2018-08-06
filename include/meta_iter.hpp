@@ -43,14 +43,13 @@ namespace ranges {
 template <typename I>
 class RandMetaIter : public RandomAccessIterator<I> {
 public:
-    static_assert(is_random_access_iterator<I>::value,
-                  "I must be a random access iterator");
+    static_assert(IS_RAND_ITER<I>, "I must be a random access iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::random_access_iterator_tag;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr I& next() {
         ++as_base().underlying();
@@ -107,14 +106,13 @@ private:
 template <typename I>
 class BiMetaIter : public BidirectionalIterator<I> {
 public:
-    static_assert(is_bidirectional_iterator<I>::value,
-                  "I must be a bidirectional iterator");
+    static_assert(IS_BIDIR_ITER<I>, "I must be a bidirectional iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::bidirectional_iterator_tag;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr I& next() {
         ++as_base().underlying();
@@ -157,14 +155,13 @@ private:
 template <typename I>
 class FwdMetaIter : public ForwardIterator<I> {
 public:
-    static_assert(is_forward_iterator<I>::value,
-                  "I must be a forward iterator");
+    static_assert(IS_FWD_ITER<I>, "I must be a forward iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::forward_iterator_tag;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr I& next() {
         ++as_base().underlying();
@@ -201,14 +198,13 @@ private:
 template <typename I>
 class InMetaIter : public InputIterator<I> {
 public:
-    static_assert(is_input_iterator<I>::value,
-                  "I must be an input iterator");
+    static_assert(IS_IN_ITER<I>, "I must be an input iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::input_iterator_tag;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr I& next() {
         ++as_base().underlying();
@@ -243,18 +239,12 @@ private:
 };
 
 template <typename I>
-using MetaIter = std::conditional_t<
-    is_random_access_iterator<I>::value,
+using MetaIter = RandIterSwitchT<
+    I,
     RandMetaIter<I>,
-    std::conditional_t<
-        is_bidirectional_iterator<I>::value,
-        BiMetaIter<I>,
-        std::conditional_t<
-            is_forward_iterator<I>::value,
-            FwdMetaIter<I>,
-            InMetaIter<I>
-        >
-    >
+    BiMetaIter<I>,
+    FwdMetaIter<I>,
+    InMetaIter<I>
 >;
 
 } // namespace ranges

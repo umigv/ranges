@@ -46,15 +46,14 @@ namespace ranges {
 template <typename I, typename P>
 class BiFilterIter : public MetaIter<BiFilterIter<I, P>> {
 public:
-    static_assert(is_bidirectional_iterator<I>::value,
-                  "I must be a bidirectional iterator");
-    static_assert(is_invocable<const P&, iterator_reference_t<I>>::value
-                  || is_applicable<const P&, iterator_reference_t<I>>::value,
+    static_assert(IS_BIDIR_ITER<I>, "I must be a bidirectional iterator");
+    static_assert(IS_INVOCABLE<const P&, IterRefT<I>>
+                  || IS_APPLICABLE<const P&, IterRefT<I>>,
                   "must be able to invoke or apply P with a value of type I");
     static_assert(
         std::is_constructible<
             bool,
-            detail::filter_result_t<const P&, iterator_reference_t<I>>
+            detail::filter_result_t<const P&, IterRefT<I>>
         >::value,
         "P must be invocable or applicable with I "
         "to a type explicitly convertible to bool"
@@ -62,11 +61,11 @@ public:
 
     friend MetaIter<BiFilterIter<I, P>>;
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::bidirectional_iterator_tag;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr BiFilterIter(const IterTriple<I> &triple, const P &predicate)
     noexcept(std::is_nothrow_copy_constructible<I>::value
@@ -135,15 +134,14 @@ private:
 template <typename I, typename P>
 class FwdFilterIter : public MetaIter<FwdFilterIter<I, P>> {
 public:
-    static_assert(is_forward_iterator<I>::value,
-                  "I must be a forward iterator");
-    static_assert(is_invocable<const P&, iterator_reference_t<I>>::value
-                  || is_applicable<const P&, iterator_reference_t<I>>::value,
+    static_assert(IS_FWD_ITER<I>, "I must be a forward iterator");
+    static_assert(IS_INVOCABLE<const P&, IterRefT<I>>
+                  || IS_APPLICABLE<const P&, IterRefT<I>>,
                   "must be able to invoke or apply P with a value of type I");
     static_assert(
         std::is_constructible<
             bool,
-            detail::filter_result_t<const P&, iterator_reference_t<I>>
+            detail::filter_result_t<const P&, IterRefT<I>>
         >::value,
         "P must be invocable or applicable with I "
         "to a type explicitly convertible to bool"
@@ -151,11 +149,11 @@ public:
 
     friend MetaIter<FwdFilterIter<I, P>>;
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::forward_iterator_tag;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr FwdFilterIter(const IterTriple<I> &triple, const P &predicate)
     noexcept(std::is_nothrow_copy_constructible<I>::value
@@ -209,15 +207,15 @@ private:
 template <typename I, typename P>
 class InFilterIter : public MetaIter<InFilterIter<I, P>> {
 public:
-    static_assert(is_input_iterator<I>::value,
+    static_assert(IS_IN_ITER<I>,
                   "I must be a forward iterator");
-    static_assert(is_invocable<const P&, iterator_reference_t<I>>::value
-                  || is_applicable<const P&, iterator_reference_t<I>>::value,
+    static_assert(IS_INVOCABLE<const P&, IterRefT<I>>
+                  || IS_APPLICABLE<const P&, IterRefT<I>>,
                   "must be able to invoke or apply P with a value of type I");
     static_assert(
         std::is_constructible<
             bool,
-            detail::filter_result_t<const P&, iterator_reference_t<I>>
+            detail::filter_result_t<const P&, IterRefT<I>>
         >::value,
         "P must be invocable or applicable with I "
         "to a type explicitly convertible to bool"
@@ -225,11 +223,11 @@ public:
 
     friend MetaIter<InFilterIter<I, P>>;
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::forward_iterator_tag;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr InFilterIter(const IterTriple<I> &triple, const P &predicate)
     noexcept(std::is_nothrow_copy_constructible<I>::value
@@ -281,14 +279,11 @@ private:
 };
 
 template <typename I, typename P>
-using FilterIter = std::conditional_t<
-    is_bidirectional_iterator<I>::value,
+using FilterIter = BidirIterSwitch<
+    I,
     BiFilterIter<I, P>,
-    std::conditional_t<
-        is_forward_iterator<I>::value,
-        FwdFilterIter<I, P>,
-        InFilterIter<I, P>
-    >
+    FwdFilterIter<I, P>,
+    InFilterIter<I, P>
 >;
 
 template <typename I, typename P>

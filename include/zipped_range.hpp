@@ -56,9 +56,9 @@ public:
     using iterator_category = std::input_iterator_tag;
     using pointer = void;
     using reference =
-        std::tuple<iterator_reference_t<std::tuple_element_t<Is, T>>...>;
+        std::tuple<IterRefT<std::tuple_element_t<Is, T>>...>;
     using value_type =
-        std::tuple<iterator_value_t<std::tuple_element_t<Is, T>>...>;
+        std::tuple<IterValT<std::tuple_element_t<Is, T>>...>;
 
     constexpr reference operator*() const {
         return reference{ (*std::get<Is>(currents_))... };
@@ -161,7 +161,7 @@ struct RangeTraits<ZippedRange<T, Is...>> {
 namespace detail {
 
 template <typename T, std::size_t ...Is>
-constexpr ZippedRange<remove_cvref_t<T>, Is...> zip(
+constexpr ZippedRange<RemoveCvrefT<T>, Is...> zip(
     T &&begins, T &&ends, std::index_sequence<Is...>
 ) noexcept(std::is_nothrow_copy_constructible<T>::value) {
     return { std::forward<T>(begins), std::forward<T>(ends) };
@@ -171,13 +171,14 @@ constexpr ZippedRange<remove_cvref_t<T>, Is...> zip(
 
 template <typename ...Rs>
 decltype(auto) zip(Rs &&...ranges)
-noexcept(conjunction<
-    std::is_nothrow_copy_constructible<begin_result_t<Rs>>...
->::value) {
+noexcept(
+    CONJUNCTION<std::is_nothrow_copy_constructible<RangeIterT<Rs>>...>
+    && CONJUNCTION<HAS_NOTHROW_BEGINEND<RangeIterT<Rs>>...>
+) {
     using std::begin;
     using std::end;
 
-    using TupleT = std::tuple<begin_result_t<Rs>...>;
+    using TupleT = std::tuple<RangeIterT<Rs>...>;
 
     return detail::zip(TupleT{ begin(std::forward<Rs>(ranges))... },
                        TupleT{ end(std::forward<Rs>(ranges))... },

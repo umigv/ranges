@@ -43,42 +43,42 @@ namespace ranges {
 namespace detail {
 
 template <typename C, typename T,
-          std::enable_if_t<is_invocable<C&&, T&&>::value, int> = 0>
-constexpr invoke_result_t<C&&, T&&> do_map(C &&callable, T &&t)
-noexcept(is_nothrow_invocable<C&&, T&&>::value) {
+          std::enable_if_t<IS_INVOCABLE<C&&, T&&>, int> = 0>
+constexpr InvokeResultT<C&&, T&&> do_map(C &&callable, T &&t)
+noexcept(IS_NOTHROW_INVOCABLE<C&&, T&&>) {
     return invoke(std::forward<C>(callable), std::forward<T>(t));
 }
 
 template <typename C, typename T,
-          std::enable_if_t<!is_invocable<C&&, T&&>::value
-                           && is_applicable<C&&, T&&>::value, int> = 0>
-constexpr apply_result_t<C&&, T&&> do_map(C &&callable, T &&t)
-noexcept(is_nothrow_applicable<C&&, T&&>::value) {
+          std::enable_if_t<!IS_INVOCABLE<C&&, T&&>
+                           && IS_APPLICABLE<C&&, T&&>, int> = 0>
+constexpr ApplyResultT<C&&, T&&> do_map(C &&callable, T &&t)
+noexcept(IS_NOTHROW_APPLICABLE<C&&, T&&>) {
     return apply(std::forward<C>(callable), std::forward<T>(t));
 }
 
 template <typename C, typename T,
-          bool = is_invocable<C, T>::value, bool = is_applicable<C, T>::value>
+          bool = IS_INVOCABLE<C, T>, bool = IS_APPLICABLE<C, T>>
 struct map_result { };
 
 template <typename C, typename T, bool B>
 struct map_result<C, T, true, B> {
-    using type = invoke_result_t<C, T>;
+    using type = InvokeResultT<C, T>;
 };
 
 template <typename C, typename T>
 struct map_result<C, T, false, true> {
-    using type = apply_result_t<C, T>;
+    using type = ApplyResultT<C, T>;
 };
 
 template <typename C, typename T>
 using map_result_t = typename map_result<C, T>::type;
 
 template <typename C, typename T>
-struct is_nothrow_mappable : true_type_if_t<std::conditional_t<
-    is_invocable<C, T>::value,
-    is_nothrow_invocable<C, T>,
-    is_nothrow_applicable<C, T>
+struct is_nothrow_mappable : TrueTypeIfT<std::conditional_t<
+    IS_INVOCABLE<C, T>,
+    IsNothrowInvocable<C, T>,
+    IsNothrowApplicable<C, T>
 >::value> { };
 
 } // namespace detail

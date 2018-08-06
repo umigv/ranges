@@ -32,6 +32,7 @@
 #ifndef UMIGV_RANGES_ITERATOR_HPP
 #define UMIGV_RANGES_ITERATOR_HPP
 
+#include "iterator_traits.hpp"
 #include "traits.hpp"
 
 #include <cstddef>
@@ -45,11 +46,11 @@ namespace ranges {
 template <typename I>
 class InputIterator {
 public:
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = iterator_category_t<I>;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using difference_type = IterDiffT<I>;
+    using iterator_category = IterCatT<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr I& next() {
         return as_base().next();
@@ -110,38 +111,52 @@ private:
 };
 
 template <typename I>
-class ForwardIterator : public InputIterator<I> {
+class ForwardIterator {
 public:
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = iterator_category_t<I>;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
-};
+    using difference_type = IterDiffT<I>;
+    using iterator_category = std::forward_iterator_tag;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
-template <typename I>
-class BidirectionalIterator : public ForwardIterator<I> {
-public:
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = iterator_category_t<I>;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
-
-    constexpr I& prev() {
-        return as_base().prev();
+    constexpr I& next() {
+        return as_base().next();
     }
 
-    constexpr I& operator--() {
-        return prev();
+    constexpr reference deref() const {
+        return as_base().deref();
     }
 
-    constexpr I operator--(int) {
+    constexpr bool is_equal(const I &other) const {
+        return as_base().eq(other);
+    }
+
+    constexpr reference operator*() const {
+        return deref();
+    }
+
+    constexpr pointer operator->() const {
+        return static_cast<pointer>(std::addressof(deref()));
+    }
+
+    constexpr I& operator++() {
+        return next();
+    }
+
+    constexpr I operator++(int) {
         const auto current = as_base();
 
-        prev();
+        next();
 
         return current;
+    }
+
+    friend constexpr bool operator==(const I &lhs, const I &rhs) {
+        return lhs.is_equal(rhs);
+    }
+
+    friend constexpr bool operator!=(const I &lhs, const I &rhs) {
+        return !lhs.is_equal(rhs);
     }
 
 private:
@@ -163,13 +178,96 @@ private:
 };
 
 template <typename I>
-class RandomAccessIterator : public BidirectionalIterator<I> {
+class BidirectionalIterator {
 public:
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = iterator_category_t<I>;
-    using pointer = iterator_pointer_t<I>;
-    using reference = iterator_reference_t<I>;
-    using value_type = iterator_value_t<I>;
+    using difference_type = IterDiffT<I>;
+    using iterator_category = std::bidirectional_iterator_tag;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
+
+    constexpr I& next() {
+        return as_base().next();
+    }
+
+    constexpr I& prev() {
+        return as_base().prev();
+    }
+
+    constexpr reference deref() const {
+        return as_base().deref();
+    }
+
+    constexpr bool is_equal(const I &other) const {
+        return as_base().eq(other);
+    }
+
+    constexpr reference operator*() const {
+        return deref();
+    }
+
+    constexpr pointer operator->() const {
+        return static_cast<pointer>(std::addressof(deref()));
+    }
+
+    constexpr I& operator++() {
+        return next();
+    }
+
+    constexpr I operator++(int) {
+        const auto current = as_base();
+
+        next();
+
+        return current;
+    }
+
+    constexpr I& operator--() {
+        return prev();
+    }
+
+    constexpr I operator--(int) {
+        const auto current = as_base();
+
+        prev();
+
+        return current;
+    }
+
+    friend constexpr bool operator==(const I &lhs, const I &rhs) {
+        return lhs.is_equal(rhs);
+    }
+
+    friend constexpr bool operator!=(const I &lhs, const I &rhs) {
+        return !lhs.is_equal(rhs);
+    }
+
+private:
+    constexpr I& as_base() & noexcept {
+        return static_cast<I&>(*this);
+    }
+
+    constexpr const I& as_base() const & noexcept {
+        return static_cast<const I&>(*this);
+    }
+
+    constexpr I&& as_base() && noexcept {
+        return static_cast<I&&>(*this);
+    }
+
+    constexpr const I&& as_base() const && noexcept {
+        return static_cast<const I&&>(*this);
+    }
+};
+
+template <typename I>
+class RandomAccessIterator {
+public:
+    using difference_type = IterDiffT<I>;
+    using iterator_category = IterCatT<I>;
+    using pointer = IterPtrT<I>;
+    using reference = IterRefT<I>;
+    using value_type = IterValT<I>;
 
     constexpr I& step(difference_type n) {
         return as_base().step(n);
@@ -183,6 +281,10 @@ public:
         return step(-1);
     }
 
+    constexpr reference deref() const {
+        return as_base().deref();
+    }
+
     constexpr difference_type distance(const I &other) const {
         return as_base().distance(other);
     }
@@ -193,6 +295,38 @@ public:
 
     constexpr bool is_less(const I &other) {
         return as_base().is_less(other);
+    }
+
+    constexpr reference operator*() const {
+        return deref();
+    }
+
+    constexpr pointer operator->() const {
+        return static_cast<pointer>(std::addressof(deref()));
+    }
+
+    constexpr I& operator++() {
+        return next();
+    }
+
+    constexpr I operator++(int) {
+        const auto current = as_base();
+
+        next();
+
+        return current;
+    }
+
+    constexpr I& operator--() {
+        return prev();
+    }
+
+    constexpr I operator--(int) {
+        const auto current = as_base();
+
+        prev();
+
+        return current;
     }
 
     constexpr I& operator+=(difference_type n) {
@@ -223,6 +357,14 @@ public:
 
     friend constexpr difference_type operator-(const I &lhs, const I &rhs) {
         return rhs.distance(lhs);
+    }
+
+    friend constexpr bool operator==(const I &lhs, const I &rhs) {
+        return lhs.is_equal(rhs);
+    }
+
+    friend constexpr bool operator!=(const I &lhs, const I &rhs) {
+        return !lhs.is_equal(rhs);
     }
 
     friend constexpr bool operator<(const I &lhs, const I &rhs) {
@@ -261,7 +403,7 @@ private:
 
 template <typename I>
 struct IterPair {
-    static_assert(is_iterator<I>::value, "I must be an iterator");
+    static_assert(IS_ITER<I>, "I must be an iterator");
 
     I first;
     I last;
@@ -269,7 +411,7 @@ struct IterPair {
 
 template <typename I>
 struct IterTriple {
-    static_assert(is_iterator<I>::value, "I must be an iterator");
+    static_assert(IS_ITER<I>, "I must be an iterator");
 
     I first;
     I last;

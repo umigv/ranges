@@ -33,7 +33,9 @@
 #define UMIGV_RANGES_CONST_ITER_HPP
 
 #include "iterator.hpp"
+#include "iterator_traits.hpp"
 #include "meta_iter.hpp"
+#include "range_traits.hpp"
 #include "traits.hpp"
 
 #include <iterator>
@@ -45,16 +47,15 @@ namespace ranges {
 template <typename I>
 class ConstIter : public MetaIter<ConstIter<I>> {
 public:
-    static_assert(is_input_iterator<I>::value,
-                  "I must be an input iterator");
+    static_assert(IS_IN_ITER<I>, "I must be an input iterator");
 
-    using difference_type = iterator_difference_t<I>;
+    using difference_type = IterDiffT<I>;
     using iterator_category = std::random_access_iterator_tag;
-    using pointer = std::add_pointer_t<add_const_t<
-        std::remove_pointer_t<iterator_pointer_t<I>>
+    using pointer = std::add_pointer_t<std::add_const_t<
+        std::remove_pointer_t<IterPtrT<I>>
     >>;
-    using reference = add_const_t<iterator_reference_t<I>>;
-    using value_type = iterator_value_t<I>;
+    using reference = std::add_const_t<IterRefT<I>>;
+    using value_type = IterValT<I>;
 
     friend MetaIter<ConstIter<I>>;
 
@@ -107,11 +108,10 @@ template <typename I>
 struct iterator_traits<umigv::ranges::ConstIter<I>> {
     using difference_type = typename iterator_traits<I>::difference_type;
     using iterator_category = typename iterator_traits<I>::iterator_category;
-    using pointer = std::add_pointer_t<umigv::ranges::add_const_t<
+    using pointer = std::add_pointer_t<add_const_t<
         std::remove_pointer_t<typename iterator_traits<I>::pointer>
     >>;
-    using reference =
-        umigv::ranges::add_const_t<typename iterator_traits<I>::reference>;
+    using reference = add_const_t<typename iterator_traits<I>::reference>;
     using value_type = typename iterator_traits<I>::value_type;
 };
 

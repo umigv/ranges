@@ -43,54 +43,60 @@ namespace umigv {
 namespace ranges {
 
 template <typename C, typename T, typename = void>
-struct is_applicable : std::false_type { };
+struct IsApplicable : std::false_type { };
 
 template <typename C, typename T>
-struct is_applicable<C, T, void_t<std::enable_if_t<is_tuple<T>::value>>>
+struct IsApplicable<C, T, VoidT<std::enable_if_t<IS_TUPLE<T>>>>
 : decltype(umigv_ranges_apply_detail::check_applicable(
     std::declval<C>(),
     std::declval<T>(),
-    std::make_index_sequence<tuple_size<T>::value>()
+    std::make_index_sequence<TUPLE_SIZE<T>>()
 )) { };
 
+template <typename C, typename T>
+constexpr bool IS_APPLICABLE = IsApplicable<C, T>::value;
+
 template <typename C, typename T, typename = void>
-struct is_nothrow_applicable : std::false_type { };
+struct IsNothrowApplicable : std::false_type { };
 
 template <typename C, typename T>
-struct is_nothrow_applicable<C, T, void_t<std::enable_if_t<is_tuple<T>::value>>>
+struct IsNothrowApplicable<C, T, VoidT<std::enable_if_t<IS_TUPLE<T>>>>
 : decltype(umigv_ranges_apply_detail::check_nothrow_applicable(
     std::declval<C>(),
     std::declval<T>(),
-    std::make_index_sequence<tuple_size<T>::value>()
+    std::make_index_sequence<TUPLE_SIZE<T>>()
 )) { };
 
+template <typename C, typename T>
+constexpr bool IS_NOTHROW_APPLICABLE = IsNothrowApplicable<C, T>::value;
+
 template <typename C, typename T, typename = void>
-struct apply_result { };
+struct ApplyResult { };
 
 template <typename C, typename T>
-struct apply_result<C, T, void_t<std::enable_if_t<is_tuple<T>::value>>> {
+struct ApplyResult<C, T, VoidT<std::enable_if_t<IS_TUPLE<T>>>> {
     using type = typename decltype(
         umigv_ranges_apply_detail::check_apply_result(
             std::declval<C>(),
             std::declval<T>(),
-            std::make_index_sequence<tuple_size<T>::value>()
+            std::make_index_sequence<TUPLE_SIZE<T>>()
         )
     )::type;
 };
 
 template <typename C, typename T>
-using apply_result_t = typename apply_result<C, T>::type;
+using ApplyResultT = typename ApplyResult<C, T>::type;
 
 template <typename C, typename T,
           std::enable_if_t<
-              is_tuple<T>::value && is_applicable<C, T>::value, int
+              IS_TUPLE<T> && IS_APPLICABLE<C, T>, int
           > = 0>
-constexpr apply_result_t<C, T> apply(C &&callable, T &&tuple)
-noexcept(is_nothrow_applicable<C, T>::value) {
+constexpr ApplyResultT<C, T> apply(C &&callable, T &&tuple)
+noexcept(IsNothrowApplicable<C, T>::value) {
     return umigv_ranges_apply_detail::apply(
         std::forward<C>(callable),
         std::forward<T>(tuple),
-        std::make_index_sequence<tuple_size<T>::value>()
+        std::make_index_sequence<TUPLE_SIZE<T>>()
     );
 }
 

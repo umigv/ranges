@@ -46,12 +46,11 @@ namespace ranges {
 template <typename I>
 class ReversedRange : public Range<ReversedRange<I>> {
 public:
-    using difference_type =
-        typename RangeTraits<ReversedRange>::difference_type;
-    using iterator = typename RangeTraits<ReversedRange>::iterator;
-    using pointer = typename RangeTraits<ReversedRange>::pointer;
-    using reference = typename RangeTraits<ReversedRange>::reference;
-    using value_type = typename RangeTraits<ReversedRange>::value_type;
+    using difference_type = RangeDiffT<ReversedRange>;
+    using iterator = RangeIterT<ReversedRange>;
+    using pointer = RangePtrT<ReversedRange>;
+    using reference = RangeRefT<ReversedRange>;
+    using value_type = RangeValT<ReversedRange>;
 
     constexpr ReversedRange(const I &first, const I &last)
     noexcept(std::is_nothrow_copy_constructible<I>::value)
@@ -73,8 +72,8 @@ private:
 };
 
 template <typename R>
-constexpr ReversedRange<begin_result_t<R>> reverse(R &&range)
-noexcept(std::is_nothrow_copy_constructible<begin_result_t<R>>::value) {
+constexpr ReversedRange<RangeIterT<R>> reverse(R &&range)
+noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value) {
     using std::begin;
     using std::end;
 
@@ -83,11 +82,11 @@ noexcept(std::is_nothrow_copy_constructible<begin_result_t<R>>::value) {
 
 template <typename I>
 struct RangeTraits<ReversedRange<I>> {
-    using difference_type = iterator_difference_t<RevIter<I>>;
+    using difference_type = IterDiffT<RevIter<I>>;
     using iterator = RevIter<I>;
-    using pointer = iterator_pointer_t<RevIter<I>>;
-    using reference = iterator_reference_t<RevIter<I>>;
-    using value_type = iterator_value_t<RevIter<I>>;
+    using pointer = IterPtrT<RevIter<I>>;
+    using reference = IterRefT<RevIter<I>>;
+    using value_type = IterValT<RevIter<I>>;
 };
 
 } // namespace ranges

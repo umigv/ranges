@@ -76,12 +76,13 @@ private:
 
 template <typename R, typename P>
 constexpr decltype(auto) filter(R &&range, P &&predicate)
-noexcept(std::is_nothrow_copy_constructible<begin_result_t<R>>::value
-         && std::is_nothrow_copy_constructible<P>::value) {
+noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value
+         && std::is_nothrow_copy_constructible<P>::value
+         && HAS_NOTHROW_BEGINEND<R>) {
     using std::begin;
     using std::end;
 
-    return FilteredRange<begin_result_t<R>, std::decay_t<P>> {
+    return FilteredRange<RangeIterT<R>, std::decay_t<P>> {
         begin(std::forward<R>(range)),
         end(std::forward<R>(range)),
         std::forward<P>(predicate)
@@ -90,11 +91,11 @@ noexcept(std::is_nothrow_copy_constructible<begin_result_t<R>>::value
 
 template <typename I, typename P>
 struct RangeTraits<FilteredRange<I, P>> {
-    using difference_type = iterator_difference_t<FilterIter<I, P>>;
+    using difference_type = IterDiffT<FilterIter<I, P>>;
     using iterator = FilterIter<I, P>;
-    using pointer = iterator_pointer_t<FilterIter<I, P>>;
-    using reference = iterator_reference_t<FilterIter<I, P>>;
-    using value_type = iterator_value_t<FilterIter<I, P>>;
+    using pointer = IterPtrT<FilterIter<I, P>>;
+    using reference = IterRefT<FilterIter<I, P>>;
+    using value_type = IterValT<FilterIter<I, P>>;
 };
 
 } // namespae ranges

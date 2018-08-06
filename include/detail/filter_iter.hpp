@@ -43,34 +43,34 @@ namespace ranges {
 namespace detail {
 
 template <typename P, typename T,
-          std::enable_if_t<is_invocable<P&&, T&&>::value, int> = 0>
+          std::enable_if_t<IS_INVOCABLE<P&&, T&&>, int> = 0>
 constexpr bool do_filter(P &&predicate, T &&t)
-noexcept(is_nothrow_invocable<P&&, T&&>::value) {
+noexcept(IS_NOTHROW_INVOCABLE<P&&, T&&>) {
     return static_cast<bool>(invoke(std::forward<P>(predicate),
                                     std::forward<T>(t)));
 }
 
 template <typename P, typename T,
-          std::enable_if_t<!is_invocable<P&&, T&&>::value
-                           && is_applicable<P&&, T&&>::value, int> = 0>
+          std::enable_if_t<!IS_INVOCABLE<P&&, T&&>
+                           && IS_APPLICABLE<P&&, T&&>, int> = 0>
 constexpr bool do_filter(P &&predicate, T &&t)
-noexcept(is_nothrow_applicable<P&&, T&&>::value) {
+noexcept(IS_NOTHROW_APPLICABLE<P&&, T&&>) {
     return static_cast<bool>(apply(std::forward<P>(predicate),
                                    std::forward<T>(t)));
 }
 
 template <typename P, typename T,
-          bool = is_invocable<P, T>::value, bool = is_applicable<P, T>::value>
+          bool = IS_INVOCABLE<P, T>, bool = IS_APPLICABLE<P, T>>
 struct filter_result { };
 
 template <typename P, typename T, bool B>
 struct filter_result<P, T, true, B> {
-    using type = invoke_result_t<P, T>;
+    using type = InvokeResultT<P, T>;
 };
 
 template <typename P, typename T>
 struct filter_result<P, T, false, true> {
-    using type = apply_result_t<P, T>;
+    using type = ApplyResultT<P, T>;
 };
 
 template <typename P, typename T>

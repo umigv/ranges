@@ -45,7 +45,7 @@ struct invoke_result { };
 template <typename T, typename ...As>
 struct invoke_result<
     T,
-    umigv::ranges::void_t<typename invoke_traits<T, void, As...>::result>,
+    umigv::ranges::VoidT<typename invoke_traits<T, void, As...>::result>,
     As...
 > {
     using type = typename invoke_traits<T, void, As...>::result;
@@ -57,7 +57,7 @@ struct is_invocable : std::false_type { };
 template <typename T, typename ...As>
 struct is_invocable<
     T,
-    umigv::ranges::void_t<typename invoke_traits<T, void, As...>::result>,
+    umigv::ranges::VoidT<typename invoke_traits<T, void, As...>::result>,
     As...
 > : std::true_type { };
 
@@ -66,7 +66,7 @@ struct is_nothrow_invocable : std::false_type { };
 
 template <typename T, typename ...As>
 struct is_nothrow_invocable<
-    T, umigv::ranges::void_t<
+    T, umigv::ranges::VoidT<
         typename invoke_traits<T, void, As...>::result,
         std::enable_if_t<invoke_traits<T, void, As...>::is_nothrow>
     >, As...

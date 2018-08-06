@@ -45,22 +45,22 @@ namespace ranges {
 template <typename I, typename C>
 class MapIter : public MetaIter<MapIter<I, C>> {
 public:
-    static_assert(is_input_iterator<I>::value,
+    static_assert(IS_IN_ITER<I>,
                   "I must be an input iterator");
-    static_assert(is_invocable<const C&, iterator_reference_t<I>>::value
-                  || is_applicable<const C&, iterator_reference_t<I>>::value,
+    static_assert(IS_INVOCABLE<const C&, IterRefT<I>>
+                  || IS_APPLICABLE<const C&, IterRefT<I>>,
                   "must be able to invoke or apply C with a value of type I");
 
     friend MetaIter<MapIter<I, C>>;
 
-    using difference_type = iterator_difference_t<I>;
-    using iterator_category = iterator_category_t<I>;
+    using difference_type = IterDiffT<I>;
+    using iterator_category = IterCatT<I>;
     using pointer = std::add_pointer_t<std::remove_reference_t<
-        detail::map_result_t<const C&, iterator_reference_t<I>>
+        detail::map_result_t<const C&, IterRefT<I>>
     >>;
-    using reference = detail::map_result_t<const C&, iterator_reference_t<I>>;
+    using reference = detail::map_result_t<const C&, IterRefT<I>>;
     using value_type =
-        remove_cvref_t<detail::map_result_t<const C&, iterator_reference_t<I>>>;
+        RemoveCvrefT<detail::map_result_t<const C&, IterRefT<I>>>;
 
     constexpr MapIter(const I &current, const C &callable)
     noexcept(std::is_nothrow_copy_constructible<I>::value
@@ -126,7 +126,7 @@ struct iterator_traits<umigv::ranges::MapIter<I, C>> {
         const C&,
         typename iterator_traits<I>::reference
     >;
-    using value_type = umigv::ranges::remove_cvref_t<
+    using value_type = umigv::ranges::RemoveCvrefT<
         umigv::ranges::detail::map_result_t<
             const C&,
             typename iterator_traits<I>::reference
