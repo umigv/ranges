@@ -39,6 +39,7 @@
 #include "mapped_range.hpp"
 #include "range_adapter.hpp"
 #include "range_fwd.hpp"
+#include "range_traits.hpp"
 #include "reversed_range.hpp"
 #include "zipped_range.hpp"
 
@@ -52,11 +53,11 @@ template <typename R>
 class Range {
 public:
     using const_iterator = ConstIter<typename RangeTraits<R>::iterator>;
-    using difference_type = typename RangeTraits<R>::difference_type;
-    using iterator = typename RangeTraits<R>::iterator;
-    using pointer = typename RangeTraits<R>::pointer;
-    using reference = typename RangeTraits<R>::reference;
-    using value_type = typename RangeTraits<R>::value_type;
+    using difference_type = RangeDiffT<R>;
+    using iterator = RangeIterT<R>;
+    using pointer = RangePtrT<R>;
+    using reference = RangeRefT<R>;
+    using value_type = RangeValT<R>;
 
     constexpr iterator begin() const noexcept {
         return as_base().begin();
