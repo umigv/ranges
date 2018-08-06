@@ -32,6 +32,8 @@
 #ifndef UMIGV_RANGES_TRAITS_HPP
 #define UMIGV_RANGES_TRAITS_HPP
 
+#include "detail/adl_traits.hpp"
+
 #include <iterator>
 #include <tuple>
 #include <type_traits>
@@ -44,10 +46,14 @@ template <typename ...Ts>
 using void_t = void;
 
 template <bool Condition>
-struct true_type_if : std::false_type { };
+struct true_type_if : std::false_type {
+    using type = std::false_type;
+};
 
 template <>
-struct true_type_if<true> : std::true_type { };
+struct true_type_if<true> : std::true_type {
+    using type = std::true_type;
+};
 
 template <bool Condition>
 using true_type_if_t = typename true_type_if<Condition>::type;
@@ -161,7 +167,7 @@ struct is_random_access_iterator<T, true>
                                  iterator_category_t<T>>::value> { };
 
 template <typename T, typename = void>
-struct begin_result { };
+struct range_iterator { };
 
 template <typename T>
 struct begin_result<T, void_t<decltype(std::begin(std::declval<T>()))>> {
@@ -434,6 +440,25 @@ template <typename T, typename U>
 struct add_const<const volatile std::pair<T, U>&&> {
     using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&&>;
 };
+
+template <typename T>
+struct is_swappable
+: true_type_if_t<umigv_ranges_detail_adl_traits::is_swappable<T>::value> { };
+
+template <typename T, typename U>
+struct is_swappable_with : true_type_if_t<
+    umigv_ranges_detail_adl_traits::is_swappable_with<T, U>::value
+> { };
+
+template <typename T>
+struct is_nothrow_swappable : true_type_if_t<
+    umigv_ranges_detail_adl_traits::is_nothrow_swappable<T>::value
+> { };
+
+template <typename T, typename U>
+struct is_nothrow_swappable_with : true_type_if_t<
+    umigv_ranges_detail_adl_traits::is_nothrow_swappable_with<T, U>::value
+> { };
 
 } // namespace ranges
 } // namespace umigv
