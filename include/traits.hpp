@@ -34,6 +34,8 @@
 
 #include "detail/adl_traits.hpp"
 
+#include "range_fwd.hpp"
+
 #include <iterator>
 #include <tuple>
 #include <type_traits>
@@ -43,422 +45,137 @@ namespace umigv {
 namespace ranges {
 
 template <typename ...Ts>
-using void_t = void;
+using VoidT = void;
 
 template <bool Condition>
-struct true_type_if : std::false_type {
+struct TrueTypeIf : std::false_type {
     using type = std::false_type;
 };
 
 template <>
-struct true_type_if<true> : std::true_type {
+struct TrueTypeIf<true> : std::true_type {
     using type = std::true_type;
 };
 
 template <bool Condition>
-using true_type_if_t = typename true_type_if<Condition>::type;
-
-template <typename T, typename = void>
-struct is_iterator : std::false_type { };
-
-template <typename T>
-struct is_iterator<
-    T,
-    void_t<typename std::iterator_traits<T>::difference_type,
-           typename std::iterator_traits<T>::value_type,
-           typename std::iterator_traits<T>::pointer,
-           typename std::iterator_traits<T>::reference,
-           typename std::iterator_traits<T>::iterator_category>
-> : std::true_type { };
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct iterator_difference { };
-
-template <typename T>
-struct iterator_difference<T, true> {
-    using type = typename std::iterator_traits<T>::difference_type;
-};
-
-template <typename T>
-using iterator_difference_t = typename iterator_difference<T>::type;
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct iterator_value { };
-
-template <typename T>
-struct iterator_value<T, true> {
-    using type = typename std::iterator_traits<T>::value_type;
-};
-
-template <typename T>
-using iterator_value_t = typename iterator_value<T>::type;
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct iterator_pointer { };
-
-template <typename T>
-struct iterator_pointer<T, true> {
-    using type = typename std::iterator_traits<T>::pointer;
-};
-
-template <typename T>
-using iterator_pointer_t = typename iterator_pointer<T>::type;
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct iterator_reference { };
-
-template <typename T>
-struct iterator_reference<T, true> {
-    using type = typename std::iterator_traits<T>::reference;
-};
-
-template <typename T>
-using iterator_reference_t = typename iterator_reference<T>::type;
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct iterator_category { };
-
-template <typename T>
-struct iterator_category<T, true> {
-    using type = typename std::iterator_traits<T>::iterator_category;
-};
-
-template <typename T>
-using iterator_category_t = typename iterator_category<T>::type;
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct is_input_iterator : std::false_type { };
-
-template <typename T>
-struct is_input_iterator<T, true>
-: true_type_if_t<std::is_base_of<std::input_iterator_tag,
-                                 iterator_category_t<T>>::value> { };
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct is_output_iterator : std::false_type { };
-
-template <typename T>
-struct is_output_iterator<T, true>
-: true_type_if_t<std::is_base_of<std::output_iterator_tag,
-                                 iterator_category_t<T>>::value> { };
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct is_forward_iterator : std::false_type { };
-
-template <typename T>
-struct is_forward_iterator<T, true>
-: true_type_if_t<std::is_base_of<std::forward_iterator_tag,
-                                 iterator_category_t<T>>::value> { };
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct is_bidirectional_iterator : std::false_type { };
-
-template <typename T>
-struct is_bidirectional_iterator<T, true>
-: true_type_if_t<std::is_base_of<std::bidirectional_iterator_tag,
-                                 iterator_category_t<T>>::value> { };
-
-template <typename T, bool IsIterator = is_iterator<T>::value>
-struct is_random_access_iterator : std::false_type { };
-
-template <typename T>
-struct is_random_access_iterator<T, true>
-: true_type_if_t<std::is_base_of<std::random_access_iterator_tag,
-                                 iterator_category_t<T>>::value> { };
-
-template <typename T, typename = void>
-struct range_iterator { };
-
-template <typename T>
-struct begin_result<T, void_t<decltype(std::begin(std::declval<T>()))>> {
-    using type = decltype((std::begin(std::declval<T>())));
-};
-
-template <typename T>
-using begin_result_t = typename begin_result<T>::type;
+using TrueTypeIfT = typename TrueTypeIf<Condition>::type;
 
 template <typename T, typename U, typename = void>
-struct is_nothrow_equality_comparable_with : std::false_type { };
+struct IsEqualityComparableWith : std::false_type { };
 
 template <typename T, typename U>
-struct is_nothrow_equality_comparable_with<T, U, void_t<
+struct IsEqualityComparableWith<T, U, VoidT<
     decltype(std::declval<T>() == std::declval<U>()),
-    decltype(std::declval<U>() == std::declval<T>())
->> : true_type_if_t<noexcept(std::declval<T>() == std::declval<U>())
-                    && noexcept(std::declval<U>() == std::declval<T>())> { };
+    decltype(std::declval<U>() == std::declval<T>()),
+>> : std::true_type { };
+
+template <typename T, typename U>
+constexpr bool IS_EQUALITY_COMPARABLE_WITH =
+    IsEqualityComparableWith<T, U>::value;
 
 template <typename T>
-struct is_nothrow_equality_comparable
-: is_nothrow_equality_comparable_with<T, T> { };
+struct IsEqualityComparable : TrueTypeIfT<
+    IS_EQUALITY_COMPARABLE_WITH<T, T>
+> { };
 
 template <typename T>
-struct remove_cvref {
+constexpr bool IS_EQUALITY_COMPARABLE = IsEqualityComparable<T>::value;
+
+template <typename T, typename U, bool = IS_EQUALITY_COMPARABLE_WITH<T, U>>
+struct IsNothrowEqualityComparableWith : std::false_type { };
+
+template <typename T, typename U>
+struct IsNothrowEqualityComparableWith : TrueTypeIfT<
+    noexcept(std::declval<T>() == std::declval<U>())
+    && noexcept(std::declval<U>() == std::declval<T>())
+> { };
+
+template <typename T, typename U>
+constexpr bool IS_NOTHROW_EQUALITY_COMPARABLE_WITH =
+    IsNothrowEqualityComparableWith<T, U>::value;
+
+template <typename T>
+struct IsNothrowEqualityComparable : TrueTypeIfT<
+    IS_NOTHROW_EQUALITY_COMPARABLE_WITH<T, T>
+> { };
+
+template <typename T>
+constexpr bool IS_NOTHROW_EQUALITY_COMPARABLE =
+    IsNothrowEqualityComparable<T>::value;
+
+template <typename T>
+struct RemoveCvref {
     using type = std::remove_cv_t<std::remove_reference_t<T>>;
 };
 
 template <typename T>
-using remove_cvref_t = typename remove_cvref<T>::type;
+using RemoveCvrefT = typename RemoveCvref<T>::type;
 
 template <typename T>
-struct decompose {
-    using type = std::conditional_t<
-        std::is_pointer<remove_cvref_t<T>>::value
-        || std::is_member_pointer<remove_cvref_t<T>>::value,
-        remove_cvref_t<T>,
-        T
-    >;
-};
-
-template <typename T>
-using decompose_t = typename decompose<T>::type;
-
-template <typename T>
-struct identity {
+struct Identity {
     using type = T;
 };
 
 template <typename T>
-using identity_t = typename identity<T>::type;
-
-namespace detail {
-
-template <typename T, typename ...Ts>
-using head_t = T;
-
-template <typename T>
-struct tuple_size { };
-
-template <typename T>
-struct tuple_size<head_t<
-    const T,
-    std::enable_if_t<!std::is_volatile<T>::value>,
-    std::integral_constant<std::size_t, sizeof(std::tuple_size<T>)>
->> : std::integral_constant<std::size_t, std::tuple_size<T>::value> { };
-
-template <typename T>
-struct tuple_size<head_t<
-    volatile T,
-    std::enable_if_t<!std::is_const<T>::value>,
-    std::integral_constant<std::size_t, sizeof(std::tuple_size<T>)>
->> : std::integral_constant<std::size_t, std::tuple_size<T>::value> { };
-
-template <typename T>
-struct tuple_size<head_t<
-    const volatile T,
-    std::integral_constant<std::size_t, sizeof(std::tuple_size<T>)>
->> : std::integral_constant<std::size_t, std::tuple_size<T>::value> { };
-
-} // namespace detail
-
-template <typename T, typename = void>
-struct tuple_size { };
-
-template <typename T>
-struct tuple_size<
-    T,
-    void_t<decltype(detail::tuple_size<const std::remove_reference_t<T>>::value)
->> : std::integral_constant<
-    std::size_t,
-    std::tuple_size<const std::remove_reference_t<T>>::value
-> { };
-
-template <typename T, typename = void>
-struct is_tuple : std::false_type { };
-
-template <typename T>
-struct is_tuple<
-    T,
-    void_t<decltype(detail::tuple_size<const std::remove_reference_t<T>>::value)>
->
-: std::true_type { };
-
-template <std::size_t I, typename T, typename = void>
-struct tuple_element { };
-
-template <std::size_t I, typename T>
-struct tuple_element<I, T, void_t<std::enable_if_t<is_tuple<T>::value>>> {
-    using type = decltype((std::get<I>(std::declval<T>())));
-};
-
-template <std::size_t I, typename T>
-using tuple_element_t = typename tuple_element<I, T>::type;
+using IdentityT = typename Identity<T>::type;
 
 template <typename...>
-struct conjunction : std::true_type { };
+struct Conjunction : std::true_type { };
 
 template <typename T>
-struct conjunction<T> : T { };
+struct Conjunction<T> : T { };
 
 template <typename T, typename ...Ts>
-struct conjunction<T, Ts...>
-: std::conditional_t<static_cast<bool>(T::value), conjunction<Ts...>, T> { };
+struct Conjunction<T, Ts...>
+: std::conditional_t<static_cast<bool>(T::value), Conjunction<Ts...>, T> { };
+
+template <typename ...Ts>
+constexpr bool CONJUNCTION = Conjunction<Ts...>::value;
 
 template <typename...>
-struct disjunction : std::false_type { };
+struct Disjunction : std::false_type { };
 
 template <class T>
-struct disjunction<T> : T { };
+struct Disjunction<T> : T { };
 
 template <class T, class... Ts>
-struct disjunction<T, Ts...>
-: std::conditional_t<static_cast<bool>(T::value), T, disjunction<Ts...>> { };
+struct Disjunction<T, Ts...>
+: std::conditional_t<static_cast<bool>(T::value), T, Disjunction<Ts...>> { };
+
+template <typename ...Ts>
+constexpr bool DISJUNCTION = Disjunction<Ts...>::value;
 
 template <typename T>
-struct add_const {
-    using type = const T;
-};
-
-template <typename T>
-using add_const_t = typename add_const<T>::type;
-
-template <typename T>
-struct add_const<T&> {
-    using type = add_const_t<T>&;
-};
-
-template <typename T>
-struct add_const<T&&> {
-    using type = add_const_t<T>&&;
-};
-
-template <typename... Ts>
-struct add_const<std::tuple<Ts...>> {
-    using type = const std::tuple<add_const_t<Ts>...>;
-};
-
-template <typename... Ts>
-struct add_const<const std::tuple<Ts...>> {
-    using type = const std::tuple<add_const_t<Ts>...>;
-};
-
-template <typename... Ts>
-struct add_const<volatile std::tuple<Ts...>> {
-    using type = const volatile std::tuple<add_const_t<Ts>...>;
-};
-
-template <typename... Ts>
-struct add_const<const volatile std::tuple<Ts...>> {
-    using type = const volatile std::tuple<add_const_t<Ts>...>;
-};
-
-template <typename... Ts>
-struct add_const<std::tuple<Ts...>&> {
-    using type = const std::tuple<add_const_t<Ts>...>&;
-};
-
-template <typename... Ts>
-struct add_const<const std::tuple<Ts...>&> {
-    using type = const std::tuple<add_const_t<Ts>...>&;
-};
-
-template <typename... Ts>
-struct add_const<volatile std::tuple<Ts...>&> {
-    using type = const volatile std::tuple<add_const_t<Ts>...>&;
-};
-
-template <typename... Ts>
-struct add_const<const volatile std::tuple<Ts...>&> {
-    using type = const volatile std::tuple<add_const_t<Ts>...>&;
-};
-
-template <typename... Ts>
-struct add_const<std::tuple<Ts...>&&> {
-    using type = const std::tuple<add_const_t<Ts>...>&&;
-};
-
-template <typename... Ts>
-struct add_const<const std::tuple<Ts...>&&> {
-    using type = const std::tuple<add_const_t<Ts>...>&&;
-};
-
-template <typename... Ts>
-struct add_const<volatile std::tuple<Ts...>&&> {
-    using type = const volatile std::tuple<add_const_t<Ts>...>&&;
-};
-
-template <typename... Ts>
-struct add_const<const volatile std::tuple<Ts...>&&> {
-    using type = const volatile std::tuple<add_const_t<Ts>...>&&;
-};
-
-template <typename T, typename U>
-struct add_const<std::pair<T, U>> {
-    using type = const std::pair<add_const_t<T>, add_const_t<U>>;
-};
-
-template <typename T, typename U>
-struct add_const<const std::pair<T, U>> {
-    using type = const std::pair<add_const_t<T>, add_const_t<U>>;
-};
-
-template <typename T, typename U>
-struct add_const<volatile std::pair<T, U>> {
-    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>>;
-};
-
-template <typename T, typename U>
-struct add_const<const volatile std::pair<T, U>> {
-    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>>;
-};
-
-template <typename T, typename U>
-struct add_const<std::pair<T, U>&> {
-    using type = const std::pair<add_const_t<T>, add_const_t<U>&>;
-};
-
-template <typename T, typename U>
-struct add_const<const std::pair<T, U>&> {
-    using type = const std::pair<add_const_t<T>, add_const_t<U>&>;
-};
-
-template <typename T, typename U>
-struct add_const<volatile std::pair<T, U>&> {
-    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&>;
-};
-
-template <typename T, typename U>
-struct add_const<const volatile std::pair<T, U>&> {
-    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&>;
-};
-
-template <typename T, typename U>
-struct add_const<std::pair<T, U>&&> {
-    using type = const std::pair<add_const_t<T>, add_const_t<U>&&>;
-};
-
-template <typename T, typename U>
-struct add_const<const std::pair<T, U>&&> {
-    using type = const std::pair<add_const_t<T>, add_const_t<U>&&>;
-};
-
-template <typename T, typename U>
-struct add_const<volatile std::pair<T, U>&&> {
-    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&&>;
-};
-
-template <typename T, typename U>
-struct add_const<const volatile std::pair<T, U>&&> {
-    using type = const volatile std::pair<add_const_t<T>, add_const_t<U>&&>;
-};
-
-template <typename T>
-struct is_swappable
-: true_type_if_t<umigv_ranges_detail_adl_traits::is_swappable<T>::value> { };
-
-template <typename T, typename U>
-struct is_swappable_with : true_type_if_t<
-    umigv_ranges_detail_adl_traits::is_swappable_with<T, U>::value
+struct IsSwappable : true_type_if_t<
+    umigv_ranges_detail_adl_traits::IsSwappable<T>::value
 > { };
 
 template <typename T>
-struct is_nothrow_swappable : true_type_if_t<
-    umigv_ranges_detail_adl_traits::is_nothrow_swappable<T>::value
+constexpr bool IS_SWAPPABLE = IsSwappable<T>::value;
+
+template <typename T, typename U>
+struct IsSwappableWith : true_type_if_t<
+    umigv_ranges_detail_adl_traits::IsSwappableWith<T, U>::value
 > { };
 
 template <typename T, typename U>
-struct is_nothrow_swappable_with : true_type_if_t<
-    umigv_ranges_detail_adl_traits::is_nothrow_swappable_with<T, U>::value
+constexpr bool IS_SWAPPABLE_WITH = IsSwappableWith<T, U>::value;
+
+template <typename T>
+struct IsNothrowSwappable : true_type_if_t<
+    umigv_ranges_detail_adl_traits::IsNothrowSwappable<T>::value
 > { };
+
+template <typename T>
+constexpr bool IS_NOTHROW_SWAPPABLE = IsNothrowSwappable<T>::value;
+
+template <typename T, typename U>
+struct IsNothrowSwappableWith : true_type_if_t<
+    umigv_ranges_detail_adl_traits::IsNothrowSwappableWith<T, U>::value
+> { };
+
+template <typename T, typename U>
+constexpr bool IS_NOTHROW_SWAPPABLE_WITH = IsNothrowSwappableWith<T, U>::value;
 
 } // namespace ranges
 } // namespace umigv
