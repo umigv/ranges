@@ -37,119 +37,127 @@
 #include <type_traits>
 #include <utility>
 
-namespace umigv_ranges_invoke_detail {
+namespace umigv_ranges_detail_invoke_traits {
 
-struct member_function_ref_tag { };
+template <typename ...Ts>
+using VoidT = void;
 
-struct member_function_ptr_tag { };
+struct DotStarParenTag { };
 
-struct member_data_ref_tag { };
+struct GetDotStarParenTag { };
 
-struct member_data_ptr_tag { };
+struct StarDotStarParenTag { };
 
-struct functor_tag { };
+struct DotStarTag { };
 
-template <typename T, typename, typename ...Args>
-struct invoke_traits { };
+struct GetDotStarTag { };
 
-template <typename T, typename U, typename V, typename ...Args>
-struct invoke_traits<
-    T U::*,
-    umigv::ranges::VoidT<decltype(
-        (std::declval<V>().*std::declval<T U::*>())(std::declval<Args>()...)
-    ), std::enable_if_t<std::is_member_function_pointer<T U::*>::value>,
-    std::enable_if_t<std::is_base_of<U, std::decay_t<V>>::value>>,
-    V, Args...
-> {
-    using type = member_function_ref_tag;
-    using result = decltype((
-        (std::declval<V>().*std::declval<T U::*>())(std::declval<Args>()...)
-    ));
+struct StarDotStarTag { };
 
-    static constexpr bool is_nothrow = noexcept(
-        (std::declval<V>().*std::declval<T U::*>())(std::declval<Args>()...)
+struct ParenTag { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsDotStarParenInvocable : std::false_type { };
+
+template <typename C, typename T, typename ...Ts>
+struct IsDotStarParenInvocable<C, VoidT<decltype(
+    (std::declval<T>().*std::declval<C>())(std::declval<Ts>()...)
+)>, T, Ts...> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsGetDotStarParenInvocable : std::false_type { };
+
+template <typename C, typename T, typename ...Ts>
+struct IsGetDotStarParenInvocable<C, VoidT<decltype(
+    (std::declval<T>().get().*std::declval<C>())(std::declval<Ts>()...)
+)>, T, Ts...> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsStarDotStarParenInvocable : std::false_type { };
+
+template <typename C, typename T, typename ...Ts>
+struct IsStarDotStarParenInvocable<C, VoidT<decltype(
+    ((*std::declval<T>()).*std::declval<C>())(std::declval<Ts>()...)
+)>, T, Ts...> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsDotStarInvocable : std::false_type { };
+
+template <typename C, typename T>
+struct IsDotStarInvocable<C, VoidT<decltype(
+    std::declval<T>().*std::declval<C>()
+)>, T> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsGetDotStarInvocable : std::false_type { };
+
+template <typename C, typename T>
+struct IsGetDotStarInvocable<C, VoidT<decltype(
+    std::declval<T>().get().*std::declval<C>()
+)>, T> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsStarDotStarInvocable : std::false_type { };
+
+template <typename C, typename T>
+struct IsStarDotStarInvocable<C, VoidT<decltype(
+    (*std::declval<T>()).*std::declval<C>()
+)>, T> : std::true_type { };
+
+template <typename C, typename T, typename ...Ts>
+constexpr decltype(auto)
+do_invoke(DotStarParenTag, C &&c, T &&t, Ts &&...ts)
+noexcept(noexcept(
+    (std::forward<T>(t).*std::forward<C>(c))(std::forward<Ts>(ts)...)
+)) {
+    return (std::forward<T>(t).*std::forward<C>(c))(std::forward<Ts>(ts)...);
+}
+
+template <typename C, typename T, typename ...Ts>
+constexpr decltype(auto)
+do_invoke(GetDotStarParenTag, C &&c, T &&t, Ts &&...ts)
+noexcept(noexcept(
+    (std::forward<T>(t).get().*std::forward<C>(c))(std::forward<Ts>(ts)...)
+)) {
+    return (std::forward<T>(t).get().*std::forward<C>(c))(
+        std::forward<Ts>(ts)...
     );
-};
+}
 
-template <typename T, typename U, typename ...Args>
-struct invoke_traits<
-    T,
-    umigv::ranges::VoidT<decltype(
-        ((*std::declval<U>()).*std::declval<T>())(
-            std::declval<Args>()...
-        )
-    ), std::enable_if_t<std::is_member_function_pointer<T>::value>>,
-    U, Args...
-> {
-    using type = member_function_ptr_tag;
-    using result = decltype((
-        ((*std::declval<U>()).*std::declval<T>())(
-            std::declval<Args>()...
-        )
-    ));
+template <typename C, typename T, typename ...Ts>
+constexpr decltype(auto)
+do_invoke(StarDotStarParenTag, C &&c, T &&t, Ts &&...ts)
+noexcept(noexcept(
+    ((*std::forward<C>(c)).*std::forward<C>(c))(std::forward<Ts>(ts)...)
+)) {
+    return ((*std::forward<T>(t)).*std::forward<C>(c))(std::forward<Ts>(ts)...);
+}
 
-    static constexpr bool is_nothrow = noexcept(
-        ((*std::declval<U>()).*std::declval<T>())(
-            std::declval<Args>()...
-        )
-    );
-};
 
-template <typename T, typename U, typename V>
-struct invoke_traits<
-    T U::*,
-    umigv::ranges::VoidT<decltype(
-        std::declval<V>().*std::declval<T U::*>()
-    ), std::enable_if_t<std::is_member_object_pointer<T U::*>::value>,
-    std::enable_if_t<std::is_base_of<U, std::decay_t<V>>::value>>,
-    V
-> {
-    using type = member_data_ref_tag;
-    using result = decltype((
-        std::declval<V>().*std::declval<T U::*>()
-    ));
+template <typename C, typename T>
+constexpr decltype(auto) do_invoke(DotStarTag, C &&c, T &&t)
+noexcept(noexcept(std::forward<C>(c).*std::forward<T>(t))) {
+    return std::forward<C>(c).*std::forward<T>(t);
+}
 
-    static constexpr bool is_nothrow = noexcept(
-        std::declval<V>().*std::declval<T U::*>()
-    );
-};
+template <typename C, typename T>
+constexpr decltype(auto) do_invoke(GetDotStarTag, C &&c, T &&t)
+noexcept(noexcept(std::forward<C>(c).get().*std::forward<T>(t))) {
+    return std::forward<C>(c).get().*std::forward<T>(t);
+}
 
-template <typename T, typename U>
-struct invoke_traits<
-    T,
-    umigv::ranges::VoidT<decltype(
-        (*std::declval<U>()).*std::declval<T>()
-    ), std::enable_if_t<std::is_member_object_pointer<T>::value>>,
-    U
-> {
-    using type = member_data_ptr_tag;
-    using result = decltype((
-        (*std::declval<U>()).*std::declval<T>()
-    ));
+template <typename C, typename T>
+constexpr decltype(auto) do_invoke(StarDotStarTag, C &&c, T &&t)
+noexcept(noexcept((*std::forward<C>(c)).*std::forward<T>(t))) {
+    return (*std::forward<C>(c)).*std::forward<T>(t);
+}
 
-    static constexpr bool is_nothrow = noexcept(
-        (*std::declval<U>()).*std::declval<T>()
-    );
-};
+template <typename C, typename ...Ts>
+constexpr decltype(auto) do_invoke(ParenTag, C &&c, Ts &&...ts)
+noexcept(noexcept(std::forward<C>(c)(std::forward<Ts>(ts)...))) {
+    return std::forward<C>(c)(std::forward<Ts>(ts)...);
+}
 
-template <typename T, typename ...Args>
-struct invoke_traits<
-    T,
-    umigv::ranges::VoidT<decltype(
-        std::declval<T>()(std::declval<Args>()...)
-    )>,
-    Args...
-> {
-    using type = functor_tag;
-    using result = decltype((
-        std::declval<T>()(std::declval<Args>()...)
-    ));
-
-    static constexpr bool is_nothrow = noexcept(
-        std::declval<T>()(std::declval<Args>()...)
-    );
-};
-
-} // namespace umigv_ranges_invoke_detail
+} // namespace umigv_ranges_detail_invoke_traits
 
 #endif
