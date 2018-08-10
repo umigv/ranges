@@ -33,79 +33,281 @@
 #define UMIGV_RANGES_DETAIL_INVOKE_HPP
 
 #include "traits.hpp"
-#include "detail/invoke_traits.hpp"
 
 #include <type_traits>
+#include <utility>
 
-namespace umigv_ranges_invoke_detail {
+namespace umigv_ranges_detail_invoke {
 
-template <typename T, typename, typename ...As>
-struct invoke_result { };
+template <typename ...Ts>
+using VoidT = void;
 
-template <typename T, typename ...As>
-struct invoke_result<
-    T,
-    umigv::ranges::VoidT<typename invoke_traits<T, void, As...>::result>,
-    As...
-> {
-    using type = typename invoke_traits<T, void, As...>::result;
+struct DotStarParenTag { };
+
+struct GetDotStarParenTag { };
+
+struct StarDotStarParenTag { };
+
+struct DotStarTag { };
+
+struct GetDotStarTag { };
+
+struct StarDotStarTag { };
+
+struct ParenTag { };
+
+struct NotInvocableTag { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsDotStarParenInvocable : std::false_type { };
+
+template <typename C, typename T, typename ...Ts>
+struct IsDotStarParenInvocable<C, VoidT<decltype(
+    (std::declval<T>().*std::declval<C>())(std::declval<Ts>()...)
+)>, T, Ts...> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsGetDotStarParenInvocable : std::false_type { };
+
+template <typename C, typename T, typename ...Ts>
+struct IsGetDotStarParenInvocable<C, VoidT<decltype(
+    (std::declval<T>().get().*std::declval<C>())(std::declval<Ts>()...)
+)>, T, Ts...> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsStarDotStarParenInvocable : std::false_type { };
+
+template <typename C, typename T, typename ...Ts>
+struct IsStarDotStarParenInvocable<C, VoidT<decltype(
+    ((*std::declval<T>()).*std::declval<C>())(std::declval<Ts>()...)
+)>, T, Ts...> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsDotStarInvocable : std::false_type { };
+
+template <typename C, typename T>
+struct IsDotStarInvocable<C, VoidT<decltype(
+    std::declval<T>().*std::declval<C>()
+)>, T> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsGetDotStarInvocable : std::false_type { };
+
+template <typename C, typename T>
+struct IsGetDotStarInvocable<C, VoidT<decltype(
+    std::declval<T>().get().*std::declval<C>()
+)>, T> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsStarDotStarInvocable : std::false_type { };
+
+template <typename C, typename T>
+struct IsStarDotStarInvocable<C, VoidT<decltype(
+    (*std::declval<T>()).*std::declval<C>()
+)>, T> : std::true_type { };
+
+template <typename C, typename = void, typename ...Ts>
+struct IsParenInvocable : std::false_type { };
+
+template <typename C, typename ...Ts>
+struct IsParenInvocable<C, VoidT<decltype(
+    std::declval<C>()(std::declval<Ts>()...)
+)>, Ts...> : std::true_type { };
+
+template <typename C, typename ...Ts>
+using InvokeTag = std::conditional_t<
+    IsDotStarParenInvocable<C, void, Ts...>::value,
+    DotStarParenTag,
+    std::conditional_t<
+        IsGetDotStarParenInvocable<C, void, Ts...>::value,
+        GetDotStarParenTag,
+        std::conditional_t<
+            IsStarDotStarParenInvocable<C, void, Ts...>::value,
+            StarDotStarParenTag,
+            std::conditional_t<
+                IsDotStarInvocable<C, void, Ts...>::value,
+                DotStarTag,
+                std::conditional_t<
+                    IsGetDotStarInvocable<C, void, Ts...>::value,
+                    GetDotStarTag,
+                    std::conditional_t<
+                        IsStarDotStarInvocable<C, void, Ts...>::value,
+                        StarDotStarTag,
+                        std::conditional_t<
+                            IsParenInvocable<C, void, Ts...>::value,
+                            ParenTag,
+                            NotInvocableTag
+                        >
+                    >
+                >
+            >
+        >
+    >
+>;
+
+template <typename C, typename ...Ts>
+struct IsInvocable : std::integral_constant<bool, !std::is_same<
+    NotInvocableTag,
+    InvokeTag<C, Ts...>
+>::value> { };
+
+template <typename T, typename C, typename ...Ts>
+struct InvokeTraits { };
+
+template <typename C, typename T, typename ...Ts>
+struct InvokeTraits<DotStarParenTag, C, T, Ts...> {
+    using Tag = DotStarParenTag;
+    using IsNothrow = std::integral_constant<bool, noexcept(
+        (std::declval<T>().*std::declval<C>())(std::declval<Ts>()...)
+    )>;
+    using Result = decltype((
+        (std::declval<T>().*std::declval<C>())(std::declval<Ts>()...)
+    ));
 };
 
-template <typename T, typename, typename ...As>
-struct is_invocable : std::false_type { };
+template <typename C, typename T, typename ...Ts>
+struct InvokeTraits<GetDotStarParenTag, C, T, Ts...> {
+    using Tag = DotStarParenTag;
+    using IsNothrow = std::integral_constant<bool, noexcept(
+        (std::declval<T>().get().*std::declval<C>())(std::declval<Ts>()...)
+    )>;
+    using Result = decltype((
+        (std::declval<T>().get().*std::declval<C>())(std::declval<Ts>()...)
+    ));
+};
 
-template <typename T, typename ...As>
-struct is_invocable<
-    T,
-    umigv::ranges::VoidT<typename invoke_traits<T, void, As...>::result>,
-    As...
-> : std::true_type { };
+template <typename C, typename T, typename ...Ts>
+struct InvokeTraits<StarDotStarParenTag, C, T, Ts...> {
+    using Tag = StarDotStarParenTag;
+    using IsNothrow = std::integral_constant<bool, noexcept(
+        ((*std::declval<T>()).*std::declval<C>())(std::declval<Ts>()...)
+    )>;
+    using Result = decltype((
+        ((*std::declval<T>()).*std::declval<C>())(std::declval<Ts>()...)
+    ));
+};
 
-template <typename T, typename, typename ...As>
-struct is_nothrow_invocable : std::false_type { };
+template <typename C, typename T>
+struct InvokeTraits<DotStarTag, C, T> {
+    using Tag = DotStarTag;
+    using IsNothrow = std::integral_constant<bool, noexcept(
+        std::declval<T>().*std::declval<C>()
+    )>;
+    using Result = decltype((
+        std::declval<T>().*std::declval<C>()
+    ));
+};
 
-template <typename T, typename ...As>
-struct is_nothrow_invocable<
-    T, umigv::ranges::VoidT<
-        typename invoke_traits<T, void, As...>::result,
-        std::enable_if_t<invoke_traits<T, void, As...>::is_nothrow>
-    >, As...
-> : std::true_type { };
+template <typename C, typename T>
+struct InvokeTraits<GetDotStarTag, C, T> {
+    using Tag = GetDotStarTag;
+    using IsNothrow = std::integral_constant<bool, noexcept(
+        std::declval<T>().get().*std::declval<C>()
+    )>;
+    using Result = decltype((
+        std::declval<T>().get().*std::declval<C>()
+    ));
+};
 
-template <typename T, typename U, typename ...As>
-constexpr decltype(auto) invoke(member_function_ref_tag, T &&t, U &&u,
-                                As &&...args)
-noexcept(is_nothrow_invocable<T, void, U, As...>::value) {
-    return (std::forward<U>(u).*std::forward<T>(t))(std::forward<As>(args)...);
+template <typename C, typename T>
+struct InvokeTraits<StarDotStarTag, C, T> {
+    using Tag = StarDotStarTag;
+    using IsNothrow = std::integral_constant<bool, noexcept(
+        (*std::declval<T>()).*std::declval<C>()
+    )>;
+    using Result = decltype((
+        (*std::declval<T>()).*std::declval<C>()
+    ));
+};
+
+template <typename C, typename ...Ts>
+struct InvokeTraits<ParenTag, C, Ts...> {
+    using Tag = ParenTag;
+    using IsNothrow = std::integral_constant<bool, noexcept(
+        std::declval<C>()(std::declval<Ts>()...)
+    )>;
+    using Result = decltype((
+        std::declval<C>()(std::declval<Ts>()...)
+    ));
+};
+
+template <typename C, typename = void, typename ...Ts>
+struct InvokeResult { };
+
+template <typename C, typename ...Ts>
+struct InvokeResult<C, VoidT<std::enable_if_t<
+    IsInvocable<C, Ts...>::value
+>>, Ts...> {
+    using type = typename InvokeTraits<InvokeTag<C, Ts...>, C, Ts...>::Result;
+};
+
+template <typename C, typename = void, typename ...Ts>
+struct IsNothrowInvocable : std::false_type { };
+
+template <typename C, typename ...Ts>
+struct IsNothrowInvocable<C, VoidT<
+    std::enable_if_t<IsInvocable<C, Ts...>::value>,
+    std::enable_if_t<InvokeTraits<C, Ts...>::IsNothrow::value>
+>, Ts...> : std::true_type { };
+
+template <typename C, typename T, typename ...Ts>
+constexpr decltype(auto)
+do_invoke(DotStarParenTag, C &&c, T &&t, Ts &&...ts)
+noexcept(noexcept(
+    (std::forward<T>(t).*std::forward<C>(c))(std::forward<Ts>(ts)...)
+)) {
+    return (std::forward<T>(t).*std::forward<C>(c))(std::forward<Ts>(ts)...);
 }
 
-template <typename T, typename U, typename ...As>
-constexpr decltype(auto) invoke(member_function_ptr_tag, T &&t, U &&u,
-                                As &&...args)
-noexcept(is_nothrow_invocable<T, void, U, As...>::value) {
-    return ((*std::forward<U>(u)).*std::forward<T>(t))(
-        std::forward<As>(args)...
+template <typename C, typename T, typename ...Ts>
+constexpr decltype(auto)
+do_invoke(GetDotStarParenTag, C &&c, T &&t, Ts &&...ts)
+noexcept(noexcept(
+    (std::forward<T>(t).get().*std::forward<C>(c))(std::forward<Ts>(ts)...)
+)) {
+    return (std::forward<T>(t).get().*std::forward<C>(c))(
+        std::forward<Ts>(ts)...
     );
 }
 
-template <typename T, typename U>
-constexpr decltype(auto) invoke(member_data_ref_tag, T &&t, U &&u)
-noexcept(is_nothrow_invocable<T, void, U>::value) {
-    return std::forward<U>(u).*std::forward<T>(t);
+template <typename C, typename T, typename ...Ts>
+constexpr decltype(auto)
+do_invoke(StarDotStarParenTag, C &&c, T &&t, Ts &&...ts)
+noexcept(noexcept(
+    ((*std::forward<T>(t)).*std::forward<C>(c))(std::forward<Ts>(ts)...)
+)) {
+    return ((*std::forward<T>(t)).*std::forward<C>(c))(std::forward<Ts>(ts)...);
 }
 
-template <typename T, typename U>
-constexpr decltype(auto) invoke(member_data_ptr_tag, T &&t, U &&u)
-noexcept(is_nothrow_invocable<T, void, U>::value) {
-    return (*std::forward<U>(u)).*std::forward<T>(t);
+template <typename C, typename T>
+constexpr decltype(auto) do_invoke(DotStarTag, C &&c, T &&t)
+noexcept(noexcept(std::forward<T>(t).*std::forward<C>(c))) {
+    return std::forward<T>(t).*std::forward<C>(c);
 }
 
-template <typename T, typename ...As>
-constexpr decltype(auto) invoke(functor_tag, T &&t, As &&...args)
-noexcept(is_nothrow_invocable<T, void, As...>::value) {
-    return std::forward<T>(t)(std::forward<As>(args)...);
+template <typename C, typename T>
+constexpr decltype(auto) do_invoke(GetDotStarTag, C &&c, T &&t)
+noexcept(noexcept(std::forward<T>(t).get().*std::forward<C>(c))) {
+    return std::forward<T>(t).get().*std::forward<C>(c);
 }
 
-} // namespace umigv_ranges_invoke_detail
+template <typename C, typename T>
+constexpr decltype(auto) do_invoke(StarDotStarTag, C &&c, T &&t)
+noexcept(noexcept((*std::forward<T>(t)).*std::forward<C>(c))) {
+    return (*std::forward<T>(t)).*std::forward<C>(c);
+}
+
+template <typename C, typename ...Ts>
+constexpr decltype(auto) do_invoke(ParenTag, C &&c, Ts &&...ts)
+noexcept(noexcept(std::forward<C>(c)(std::forward<Ts>(ts)...))) {
+    return std::forward<C>(c)(std::forward<Ts>(ts)...);
+}
+
+template <typename T, typename ...Ts>
+constexpr void do_invoke(NotInvocableTag, T&&, Ts &&...) {
+    static_assert(!std::is_same<T, T>::value, "not invocable");
+}
+
+} // namespace umigv_ranges_detail_invoke
 
 #endif

@@ -43,130 +43,35 @@
 namespace umigv {
 namespace ranges {
 
-template <typename T>
-struct UnwrapRefResult {
-    using type = T;
-};
-
-template <typename T>
-struct UnwrapRefResult<std::reference_wrapper<T>> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<const std::reference_wrapper<T>> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<volatile std::reference_wrapper<T>> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<const volatile std::reference_wrapper<T>> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<std::reference_wrapper<T>&> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<const std::reference_wrapper<T>&> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<volatile std::reference_wrapper<T>&> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<const volatile std::reference_wrapper<T>&> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<std::reference_wrapper<T>&&> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<const std::reference_wrapper<T>&&> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<volatile std::reference_wrapper<T>&&> {
-    using type = T&;
-};
-
-template <typename T>
-struct UnwrapRefResult<const volatile std::reference_wrapper<T>&&> {
-    using type = T&;
-};
-
-template <typename T>
-using UnwrapRefResultT = typename UnwrapRefResult<T>::type;
-
-template <typename T>
-constexpr T&& unwrap_ref(T &&t) noexcept {
-    return std::forward<T>(t);
-}
-
-template <typename T>
-constexpr T& unwrap_ref(std::reference_wrapper<T> t) noexcept {
-    return t.get();
-}
-
 template <typename T, typename ...As>
-using InvokeResult = umigv_ranges_invoke_detail::invoke_result<
-    UnwrapPtrRefT<T>,
-    void,
-    UnwrapRefResultT<As>...
->;
+using InvokeResult = umigv_ranges_detail_invoke::InvokeResult<T, void, As...>;
 
 template <typename T, typename ...As>
 using InvokeResultT = typename InvokeResult<T, As...>::type;
 
 template <typename T, typename ...As>
-using IsInvocable = umigv_ranges_invoke_detail::is_invocable<
-    UnwrapPtrRefT<T>,
-    void,
-    UnwrapRefResultT<As>...
->;
+using IsInvocable = umigv_ranges_detail_invoke::IsInvocable<T, As...>;
 
 template <typename T, typename ...As>
 constexpr bool IS_INVOCABLE = IsInvocable<T, As...>::value;
 
 template <typename T, typename ...As>
-using IsNothrowInvocable = umigv_ranges_invoke_detail::is_nothrow_invocable<
-    UnwrapPtrRefT<T>,
-    void,
-    UnwrapRefResultT<As>...
->;
-
+using IsNothrowInvocable =
+    umigv_ranges_detail_invoke::IsNothrowInvocable<T, void, As...>;
 
 template <typename T, typename ...As>
 constexpr bool IS_NOTHROW_INVOCABLE = IsNothrowInvocable<T, As...>::value;
 
 template <typename C, typename ...As,
           std::enable_if_t<IS_INVOCABLE<C, As...>, int> = 0>
-constexpr InvokeResultT<C, UnwrapRefResult<As>...> invoke(C &&c, As &&...args)
+constexpr InvokeResultT<C, As...> invoke(C &&c, As &&...args)
 noexcept(IS_NOTHROW_INVOCABLE<C, As...>) {
-    using TraitsT = typename umigv_ranges_invoke_detail::invoke_traits<
-        UnwrapPtrRefT<C>,
-        void,
-        UnwrapRefResult<As>...
-    >;
-    using TypeT = typename TraitsT::type;
+    using Tag = typename umigv_ranges_detail_invoke::InvokeTag<C, As...>;
 
-    return umigv_ranges_invoke_detail::invoke(
-        TypeT{ },
+    return umigv_ranges_detail_invoke::do_invoke(
+        Tag{ },
         std::forward<C>(c),
-        unwrap_ref(std::forward<As>(args))...
+        std::forward<As>(args)...
     );
 }
 
