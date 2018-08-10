@@ -303,9 +303,9 @@ noexcept(noexcept(std::forward<C>(c)(std::forward<Ts>(ts)...))) {
     return std::forward<C>(c)(std::forward<Ts>(ts)...);
 }
 
-template <typename T, typename ...Ts>
-constexpr void do_invoke(NotInvocableTag, T&&, Ts &&...) {
-    static_assert(!std::is_same<T, T>::value, "not invocable");
+template <typename C, typename ...Ts>
+constexpr void do_invoke(NotInvocableTag, C&&, Ts &&...) {
+    static_assert(!std::is_same<C, C>::value, "not invocable");
 }
 
 } // namespace umigv_ranges_detail_invoke
