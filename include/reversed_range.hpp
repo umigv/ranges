@@ -34,7 +34,7 @@
 
 #include "range_fwd.hpp"
 #include "rev_iter.hpp"
-#include "traits.hpp"
+#include "range_traits.hpp"
 
 #include <iterator>
 #include <type_traits>
@@ -72,8 +72,11 @@ private:
 };
 
 template <typename R>
-constexpr ReversedRange<RangeIterT<R>> reverse(R &&range)
-noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value) {
+constexpr ReversedRange<BeginResultT<R&&>> reverse(R &&range)
+noexcept(std::is_nothrow_copy_constructible<BeginResultT<R&&>>::value
+         && HAS_NOTHROW_BEGINEND<R&&>) {
+    static_assert(HAS_BEGINEND<R&&>, "R must have a begin and end");
+
     using std::begin;
     using std::end;
 
