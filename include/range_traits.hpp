@@ -34,8 +34,11 @@
 
 #include "detail/adl_traits.hpp"
 
+#include "traits.hpp"
+
 #include <cstddef>
 #include <initializer_list>
+#include <iterator>
 
 namespace umigv {
 namespace ranges {
@@ -90,6 +93,14 @@ struct HasRangeTraits<T, VoidT<
 
 template <typename T>
 constexpr bool HAS_RANGE_TRAITS = HasRangeTraits<T>::value;
+
+template <typename T>
+struct IsRange : TrueTypeIfT<
+    HasBeginend<T>::value && HasRangeTraits<T>::value
+> { };
+
+template <typename T>
+constexpr bool IS_RANGE = IsRange<T>::value;
 
 template <typename T, bool = HAS_RANGE_TRAITS<T>>
 struct RangeDiff { };
@@ -146,13 +157,18 @@ struct RangeVal<T, true> {
 template <typename T>
 using RangeValT = typename RangeVal<T>::type;
 
-template <typename T>
-struct IsRange : TrueTypeIfT<
-    HasBeginend<T>::value && HasRangeTraits<T>::value
-> { };
+template <typename T, bool = HAS_BEGINEND<T>>
+struct BeginResult { };
 
 template <typename T>
-constexpr bool IS_RANGE = IsRange<T>::value;
+struct BeginResult<T, true> {
+    using type = decltype((
+        umigv_ranges_detail_adl_traits::adl_begin(std::declval<T>())
+    ));
+};
+
+template <typename T>
+using BeginResultT = typename BeginResult<T>::type;
 
 } // namespace ranges
 } // namespace umigv
