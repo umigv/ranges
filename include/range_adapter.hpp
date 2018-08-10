@@ -50,7 +50,7 @@ public:
     static_assert(IS_ITER<I>, "I must be an iterator");
 
     using difference_type = RangeDiffT<RangeAdapter>;
-    using iterator = RangeIterT<RangeAdapter>;
+    using iterator = I;
     using pointer = RangePtrT<RangeAdapter>;
     using reference = RangeRefT<RangeAdapter>;
     using value_type = RangeValT<RangeAdapter>;
@@ -58,11 +58,13 @@ public:
     constexpr RangeAdapter(const I &first, const I &last)
     : first_{ first }, last_{ last } { }
 
-    constexpr iterator begin() const noexcept {
+    constexpr iterator begin() const
+    noexcept(std::is_nothrow_copy_constructible<I>::value) {
         return first_;
     }
 
-    constexpr iterator end() const noexcept {
+    constexpr iterator end() const
+    noexcept(std::is_nothrow_copy_constructible<I>::value) {
         return last_;
     }
 
@@ -78,9 +80,9 @@ noexcept(std::is_nothrow_copy_constructible<I>::value) {
 }
 
 template <typename R>
-constexpr RangeAdapter<RangeIterT<R>> adapt(R &&range)
+constexpr RangeAdapter<BeginResultT<R&&>> adapt(R &&range)
 noexcept(HAS_NOTHROW_BEGINEND<R>
-         && std::is_nothrow_copy_constructible<RangeIterT<R>>::value) {
+         && std::is_nothrow_copy_constructible<BeginResultT<R&&>>::value) {
     static_assert(HAS_BEGINEND<R>, "R must have a begin and end");
 
     using std::begin;
