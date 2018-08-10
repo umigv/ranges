@@ -41,6 +41,12 @@ using std::swap;
 using std::begin;
 using std::end;
 
+template <typename T>
+constexpr decltype(auto) adl_begin(T &&t)
+noexcept(noexcept(begin(std::forward<T>(t)))) {
+    return begin(std::forward<T>(t));
+}
+
 template <typename ...Ts>
 using VoidT = void;
 
