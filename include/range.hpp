@@ -52,9 +52,9 @@ namespace ranges {
 template <typename R>
 class Range {
 public:
-    using const_iterator = ConstIter<typename RangeTraits<R>::iterator>;
+    using const_iterator = ConstIter<BeginResultT<R>>;
     using difference_type = RangeDiffT<R>;
-    using iterator = RangeIterT<R>;
+    using iterator = BeginResultT<R>;
     using pointer = RangePtrT<R>;
     using reference = RangeRefT<R>;
     using value_type = RangeValT<R>;
