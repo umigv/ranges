@@ -36,7 +36,7 @@
 #include "filter_iter.hpp"
 #include "invoke.hpp"
 #include "range_fwd.hpp"
-#include "traits.hpp"
+#include "range_traits.hpp"
 
 #include <type_traits>
 
@@ -46,12 +46,11 @@ namespace ranges {
 template <typename I, typename P>
 class FilteredRange : public Range<FilteredRange<I, P>> {
 public:
-    using difference_type =
-        typename RangeTraits<FilteredRange>::difference_type;
-    using iterator = typename RangeTraits<FilteredRange>::iterator;
-    using pointer = typename RangeTraits<FilteredRange>::pointer;
-    using reference = typename RangeTraits<FilteredRange>::reference;
-    using value_type = typename RangeTraits<FilteredRange>::value_type;
+    using difference_type = RangeDiffT<FilteredRange>;
+    using iterator = RangeIterT<FilteredRange>;
+    using pointer = RangePtrT<FilteredRange>;
+    using reference = RangeRefT<FilteredRange>;
+    using value_type = RangeValT<FilteredRange>;
 
     constexpr FilteredRange(const I &first, const I &last, const P &predicate)
     noexcept(std::is_nothrow_copy_constructible<I>::value
@@ -75,14 +74,15 @@ private:
 };
 
 template <typename R, typename P>
-constexpr decltype(auto) filter(R &&range, P &&predicate)
-noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value
-         && std::is_nothrow_copy_constructible<P>::value
-         && HAS_NOTHROW_BEGINEND<R>) {
+constexpr FilteredRange<RemoveCvrefT<BeginResultT<R&&>>, RemoveCvrefT<P>>
+filter(R &&range, P &&predicate)
+noexcept(std::is_nothrow_copy_constructible<BeginResultT<R&&>>::value
+         && std::is_nothrow_copy_constructible<RemoveCvrefT<P>>::value
+         && HAS_NOTHROW_BEGINEND<R&&>) {
     using std::begin;
     using std::end;
 
-    return FilteredRange<RangeIterT<R>, std::decay_t<P>> {
+    return {
         begin(std::forward<R>(range)),
         end(std::forward<R>(range)),
         std::forward<P>(predicate)
