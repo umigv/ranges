@@ -1,7 +1,7 @@
 -Iinclude
--isystem googletest/googletest/include
--isystem googletest/googlemock/include
--isystem type_safe/include
+-isystemgoogletest/googletest/include
+-isystemgoogletest/googlemock/include
+-isystemtype_safe/include
 -fsyntax-only
 -std=c++14
 -Wall
