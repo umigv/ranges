@@ -58,6 +58,9 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_executable(test_reversed_range test/reversed_range.cpp)
     target_link_libraries(test_reversed_range gtest gtest_main)
 
+    add_executable(test_invoke test/invoke.cpp)
+    target_link_libraries(test_invoke gtest gtest_main)
+
     add_test(TestRangeAdapter test_range_adapter)
     add_test(TestMappedRange test_mapped_range)
     add_test(TestFilteredRange test_filtered_range)
@@ -68,6 +71,7 @@ if (UMIGV_RANGES_BUILD_TESTS)
     add_test(TestEnumeratedRange test_enumerated_range)
     add_test(TestZippedRange test_zipped_range)
     add_test(TestReversedRange test_reversed_range)
+    add_test(TestInvoke test_invoke)
 endif()
 
 install(DIRECTORY include/ DESTINATION include/umigv/ranges)
