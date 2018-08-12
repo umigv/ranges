@@ -167,23 +167,6 @@ struct IsNothrowSwappableWith : BooleanConstant<
 template <typename T, typename U>
 constexpr bool IS_NOTHROW_SWAPPABLE_WITH = IsNothrowSwappableWith<T, U>::value;
 
-template <
-    typename T,
-    bool = std::is_pointer<std::remove_reference_t<T>>::value
-           || std::is_member_pointer<std::remove_reference_t<T>>::value
->
-struct UnwrapPtrRef {
-    using type = T;
-};
-
-template <typename T>
-struct UnwrapPtrRef<T, true> {
-    using type = std::remove_reference_t<T>;
-};
-
-template <typename T>
-using UnwrapPtrRefT = typename UnwrapPtrRef<T>::type;
-
 } // namespace ranges
 } // namespace umigv
 
