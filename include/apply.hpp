@@ -46,15 +46,36 @@ template <typename C, typename T, typename = void>
 struct IsApplicable : std::false_type { };
 
 template <typename C, typename T>
-struct IsApplicable<C, T, VoidT<std::enable_if_t<IS_TUPLE<T>>>>
+struct IsApplicable<C, T, VoidT<std::enable_if_t<IS_TUPLE<RemoveCvrefT<T>>>>>
 : decltype(umigv_ranges_apply_detail::check_applicable(
     std::declval<C>(),
     std::declval<T>(),
-    std::make_index_sequence<TUPLE_SIZE<T>>()
+    std::make_index_sequence<TUPLE_SIZE<RemoveCvrefT<T>>>()
 )) { };
 
 template <typename C, typename T>
 constexpr bool IS_APPLICABLE = IsApplicable<C, T>::value;
+
+static_assert(IS_APPLICABLE<decltype(std::move<int&>), std::tuple<int&>>, "");
+static_assert(IS_APPLICABLE<decltype(&std::move<int&>), std::tuple<int&>>, "");
+static_assert(IS_APPLICABLE<
+    decltype(std::move<int&>),
+    std::tuple<std::reference_wrapper<int>>
+>, "");
+static_assert(IS_APPLICABLE<
+    decltype(&std::move<int&>),
+    std::tuple<std::reference_wrapper<int>>
+>, "");
+static_assert(IS_APPLICABLE<decltype(std::move<int&>), std::tuple<int&>&>, "");
+static_assert(IS_APPLICABLE<decltype(&std::move<int&>), std::tuple<int&>&>, "");
+static_assert(IS_APPLICABLE<
+    decltype(std::move<int&>),
+    const std::tuple<int&>&
+>, "");
+static_assert(IS_APPLICABLE<
+    decltype(&std::move<int&>),
+    const std::tuple<int&>&
+>, "");
 
 template <typename C, typename T, typename = void>
 struct IsNothrowApplicable : std::false_type { };
@@ -74,12 +95,12 @@ template <typename C, typename T, typename = void>
 struct ApplyResult { };
 
 template <typename C, typename T>
-struct ApplyResult<C, T, VoidT<std::enable_if_t<IS_TUPLE<T>>>> {
+struct ApplyResult<C, T, VoidT<std::enable_if_t<IS_TUPLE<RemoveCvrefT<T>>>>> {
     using type = typename decltype(
         umigv_ranges_apply_detail::check_apply_result(
             std::declval<C>(),
             std::declval<T>(),
-            std::make_index_sequence<TUPLE_SIZE<T>>()
+            std::make_index_sequence<TUPLE_SIZE<RemoveCvrefT<T>>>()
         )
     )::type;
 };
@@ -87,16 +108,15 @@ struct ApplyResult<C, T, VoidT<std::enable_if_t<IS_TUPLE<T>>>> {
 template <typename C, typename T>
 using ApplyResultT = typename ApplyResult<C, T>::type;
 
-template <typename C, typename T,
-          std::enable_if_t<
-              IS_TUPLE<T> && IS_APPLICABLE<C, T>, int
-          > = 0>
+template <typename C, typename T, std::enable_if_t<
+    IS_TUPLE<RemoveCvrefT<T>> && IS_APPLICABLE<C, T>,
+int> = 0>
 constexpr ApplyResultT<C, T> apply(C &&callable, T &&tuple)
 noexcept(IsNothrowApplicable<C, T>::value) {
     return umigv_ranges_apply_detail::apply(
         std::forward<C>(callable),
         std::forward<T>(tuple),
-        std::make_index_sequence<TUPLE_SIZE<T>>()
+        std::make_index_sequence<TUPLE_SIZE<RemoveCvrefT<T>>>()
     );
 }
 
