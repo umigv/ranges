@@ -45,12 +45,17 @@ struct IsTuple : std::false_type { };
 template <typename T>
 struct IsTuple<T, VoidT<
     decltype(umigv_ranges_detail_tuple_traits::TupleSize<
-        std::add_const<T>
+        std::add_const_t<T>
     >::value)
 >> : std::true_type { };
 
 template <typename T>
 constexpr bool IS_TUPLE = IsTuple<T>::value;
+
+static_assert(IS_TUPLE<std::tuple<>>, "");
+static_assert(IS_TUPLE<std::tuple<int>>, "");
+static_assert(IS_TUPLE<std::pair<int, int>>, "");
+static_assert(IS_TUPLE<std::array<int, 4>>, "");
 
 template <typename T, bool = IS_TUPLE<T>>
 struct TupleSize { };
@@ -62,6 +67,11 @@ struct TupleSize<T, true>
 template <typename T>
 constexpr std::size_t TUPLE_SIZE = TupleSize<T>::value;
 
+static_assert(TUPLE_SIZE<std::tuple<>> == 0, "");
+static_assert(TUPLE_SIZE<std::tuple<int>> == 1, "");
+static_assert(TUPLE_SIZE<std::pair<int, int>> == 2, "");
+static_assert(TUPLE_SIZE<std::array<int, 4>> == 4, "");
+
 template <std::size_t I, typename T, typename = void>
 struct IsGettable : std::false_type { };
 
@@ -72,6 +82,10 @@ struct IsGettable<I, T, VoidT<
 
 template <std::size_t I, typename T>
 constexpr bool IS_GETTABLE = IsGettable<I, T>::value;
+
+static_assert(IS_GETTABLE<0, std::tuple<int>>, "");
+static_assert(IS_GETTABLE<1, std::pair<int, int>>, "");
+static_assert(IS_GETTABLE<3, std::array<int, 4>>, "");
 
 template <std::size_t I, typename T, bool = IS_GETTABLE<I, T>>
 struct GetResult { };
