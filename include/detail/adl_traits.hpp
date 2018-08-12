@@ -41,27 +41,11 @@ using std::swap;
 using std::begin;
 using std::end;
 
-template <typename T>
-constexpr decltype(auto) adl_begin(T &&t)
-noexcept(noexcept(begin(std::forward<T>(t)))) {
-    return begin(std::forward<T>(t));
-}
-
 template <typename ...Ts>
 using VoidT = void;
 
-template <bool Condition>
-struct TrueTypeIf : std::false_type {
-    using type = std::false_type;
-};
-
-template <>
-struct TrueTypeIf<true> : std::true_type {
-    using type = std::true_type;
-};
-
-template <bool Condition>
-using TrueTypeIfT = typename TrueTypeIf<Condition>::type;
+template <bool B>
+using BooleanConstant = std::integral_constant<bool, B>;
 
 template <typename T, typename U, typename = void>
 struct IsSwappableWith : std::false_type { };
@@ -73,53 +57,55 @@ struct IsSwappableWith<T, U, VoidT<
 >> : std::true_type { };
 
 template <typename T>
-struct IsSwappable : TrueTypeIfT<IsSwappableWith<T, T>::value> { };
+struct IsSwappable : BooleanConstant<IsSwappableWith<T, T>::value> { };
 
-template <typename T, typename U,
-          bool = IsSwappableWith<T, U>::value>
+template <typename T, typename U, bool = IsSwappableWith<T, U>::value>
 struct IsNothrowSwappableWith : std::false_type { };
 
 template <typename T, typename U>
-struct IsNothrowSwappableWith<T, U, true> : TrueTypeIfT<
+struct IsNothrowSwappableWith<T, U, true> : BooleanConstant<
     noexcept(swap(std::declval<T>(), std::declval<U>()))
     && noexcept(swap(std::declval<U>(), std::declval<T>()))
 > { };
 
 template <typename T>
-struct IsNothrowSwappable : TrueTypeIfT<
+struct IsNothrowSwappable : BooleanConstant<
     IsNothrowSwappableWith<T, T>::value
 > { };
 
 template <typename T, typename = void>
-struct HasBegin : std::false_type { };
+struct IsBeginable : std::false_type { };
 
 template <typename T>
-struct HasBegin<T, VoidT<decltype(begin(std::declval<T>()))>>
-: std::true_type { };
+struct IsBeginable<T, VoidT<
+    decltype(begin(std::declval<T>()))>
+> : std::true_type { };
 
-template <typename T, typename = void>
-struct HasEnd : std::false_type { };
-
-template <typename T>
-struct HasEnd<T, VoidT<decltype(end(std::declval<T>()))>> : std::true_type { };
-
-template <typename T, bool = HasBegin<T>::value>
-struct HasNothrowBegin : std::false_type { };
+template <typename T, bool = IsBeginable<T>::value>
+struct IsNothrowBeginable : std::false_type { };
 
 template <typename T>
-struct HasNothrowBegin<T, true> : TrueTypeIfT<noexcept(
+struct IsNothrowBeginable<T, true> : BooleanConstant<noexcept(
     begin(std::declval<T>())
 )> { };
 
-template <typename T, bool = HasEnd<T>::value>
-struct HasNothrowEnd : std::false_type { };
+template <typename T, typename = void>
+struct IsEndable : std::false_type { };
 
 template <typename T>
-struct HasNothrowEnd<T, true> : TrueTypeIfT<noexcept(
+struct IsEndable<T, VoidT<
+    decltype(end(std::declval<T>()))>
+> : std::true_type { };
+
+template <typename T, bool = IsEndable<T>::value>
+struct IsNothrowEndable : std::false_type { };
+
+template <typename T>
+struct IsNothrowEndable<T, true> : BooleanConstant<noexcept(
     end(std::declval<T>())
 )> { };
 
-template <typename T, bool = HasBegin<T>::value>
+template <typename T, bool = IsBeginable<T>::value>
 struct BeginResult { };
 
 template <typename T>
@@ -127,7 +113,7 @@ struct BeginResult<T, true> {
     using type = decltype((begin(std::declval<T>())));
 };
 
-template <typename T, bool = HasEnd<T>::value>
+template <typename T, bool = IsEndable<T>::value>
 struct EndResult { };
 
 template <typename T>
@@ -135,6 +121,6 @@ struct EndResult<T, true> {
     using type = decltype((end(std::declval<T>())));
 };
 
-} // namespace umigv_detail_adl
+} // namespace umigv_ranges_detail_adl_traits
 
 #endif
