@@ -43,51 +43,73 @@
 namespace umigv {
 namespace ranges {
 
+template <typename T>
+using BeginResult = umigv_ranges_detail_adl_traits::BeginResult<T>;
+
+template <typename T>
+using BeginResultT = typename BeginResult<T>::type;
+
+template <typename T>
+using EndResult = umigv_ranges_detail_adl_traits::EndResult<T>;
+
+template <typename T>
+using EndResultT = typename EndResult<T>::type;
+
+template <typename T>
+using IsNothrowBeginable =
+    umigv_ranges_detail_adl_traits::IsNothrowBeginable<T>;
+
+template <typename T>
+constexpr bool IS_NOTHROW_BEGINABLE = IsNothrowBeginable<T>::value;
+
+template <typename T>
+using IsNothrowEndable = umigv_ranges_detail_adl_traits::IsNothrowEndable<T>;
+
+template <typename T>
+constexpr bool IS_NOTHROW_ENDABLE = IsNothrowEndable<T>::value;
+
+template <typename T>
+struct IsBeginendable : BooleanConstant<
+    umigv_ranges_detail_adl_traits::IsBeginable<T>::value
+    && umigv_ranges_detail_adl_traits::IsEndable<T>::value
+> { };
+
+template <typename T>
+constexpr bool IS_BEGINENDABLE = IsBeginendable<T>::value;
+
+template <typename T>
+struct IsNothrowBeginendable : BooleanConstant<
+    umigv_ranges_detail_adl_traits::IsNothrowBeginable<T>::value
+    && umigv_ranges_detail_adl_traits::IsNothrowEndable<T>::value
+> { };
+
+template <typename T>
+constexpr bool IS_NOTHROW_BEGINENDABLE = IsNothrowBeginendable<T>::value;
+
 template <typename R>
 struct RangeTraits {
-    using difference_type = typename R::difference_type;
     using iterator = typename R::iterator;
-    using pointer = typename R::pointer;
     using reference = typename R::reference;
+    using size_type = typename R::size_type;
     using value_type = typename R::value_type;
 };
 
 template <typename T, std::size_t N>
 struct RangeTraits<T[N]> {
-    using difference_type = std::ptrdiff_t;
+    using difference_type = std::size_t;
     using iterator = T*;
-    using pointer = T*;
     using reference = T&;
     using value_type = T;
 };
-
-template <typename T>
-struct HasBeginend : TrueTypeIfT<
-    umigv_ranges_detail_adl_traits::HasBegin<T>::value
-    && umigv_ranges_detail_adl_traits::HasEnd<T>::value
-> { };
-
-template <typename T>
-constexpr bool HAS_BEGINEND = HasBeginend<T>::value;
-
-template <typename T>
-struct HasNothrowBeginend : TrueTypeIfT<
-    umigv_ranges_detail_adl_traits::HasNothrowBegin<T>::value
-    && umigv_ranges_detail_adl_traits::HasNothrowEnd<T>::value
-> { };
-
-template <typename T>
-constexpr bool HAS_NOTHROW_BEGINEND = HasNothrowBeginend<T>::value;
 
 template <typename T, typename = void>
 struct HasRangeTraits : std::false_type { };
 
 template <typename T>
 struct HasRangeTraits<T, VoidT<
-    typename RangeTraits<T>::difference_type,
     typename RangeTraits<T>::iterator,
-    typename RangeTraits<T>::pointer,
     typename RangeTraits<T>::reference,
+    typename RangeTraits<T>::size_type,
     typename RangeTraits<T>::value_type
 >> : std::true_type { };
 
@@ -95,23 +117,23 @@ template <typename T>
 constexpr bool HAS_RANGE_TRAITS = HasRangeTraits<T>::value;
 
 template <typename T>
-struct IsRange : TrueTypeIfT<
-    HasBeginend<T>::value && HasRangeTraits<T>::value
+struct IsRange : BooleanConstant<
+    IsBeginendable<T>::value && HasRangeTraits<T>::value
 > { };
 
 template <typename T>
 constexpr bool IS_RANGE = IsRange<T>::value;
 
 template <typename T, bool = HAS_RANGE_TRAITS<T>>
-struct RangeDiff { };
+struct RangeSize { };
 
 template <typename T>
-struct RangeDiff<T, true> {
-    using type = typename RangeTraits<T>::difference_type;
+struct RangeSize<T, true> {
+    using type = typename RangeTraits<T>::size_type;
 };
 
 template <typename T>
-using RangeDiffT = typename RangeDiff<T>::type;
+using RangeSizeT = typename RangeSize<T>::type;
 
 template <typename T, bool = HAS_RANGE_TRAITS<T>>
 struct RangeIter { };
@@ -123,17 +145,6 @@ struct RangeIter<T, true> {
 
 template <typename T>
 using RangeIterT = typename RangeIter<T>::type;
-
-template <typename T, bool = HAS_RANGE_TRAITS<T>>
-struct RangePtr { };
-
-template <typename T>
-struct RangePtr<T, true> {
-    using type = typename RangeTraits<T>::pointer;
-};
-
-template <typename T>
-using RangePtrT = typename RangePtr<T>::type;
 
 template <typename T, bool = HAS_RANGE_TRAITS<T>>
 struct RangeRef { };
@@ -156,19 +167,6 @@ struct RangeVal<T, true> {
 
 template <typename T>
 using RangeValT = typename RangeVal<T>::type;
-
-template <typename T, bool = HAS_BEGINEND<T>>
-struct BeginResult { };
-
-template <typename T>
-struct BeginResult<T, true> {
-    using type = decltype((
-        umigv_ranges_detail_adl_traits::adl_begin(std::declval<T>())
-    ));
-};
-
-template <typename T>
-using BeginResultT = typename BeginResult<T>::type;
 
 } // namespace ranges
 } // namespace umigv

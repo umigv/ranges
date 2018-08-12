@@ -43,10 +43,9 @@ namespace ranges {
 template <typename T>
 class CountingRange : public Range<CountingRange<T>> {
 public:
-    using difference_type = RangeDiffT<CountingRange>;
     using iterator = RangeIterT<CountingRange>;
-    using pointer = RangePtrT<CountingRange>;
     using reference = RangeRefT<CountingRange>;
+    using size_type = RangeSizeT<CountingRange>;
     using value_type = RangeValT<CountingRange>;
 
     constexpr explicit CountingRange(const T &end) noexcept
@@ -91,10 +90,9 @@ constexpr CountingRange<T> range(const T &begin, const T &step,
 
 template <typename T>
 struct RangeTraits<CountingRange<T>> {
-    using difference_type = IterDiffT<CountIter<T>>;
     using iterator = CountIter<T>;
-    using pointer = IterPtrT<CountIter<T>>;
     using reference = IterRefT<CountIter<T>>;
+    using size_type = std::make_unsigned_t<IterDiffT<CountIter<T>>>;
     using value_type = IterValT<CountIter<T>>;
 };
 

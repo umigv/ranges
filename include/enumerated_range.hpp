@@ -43,18 +43,15 @@
 #include <stdexcept>
 #include <utility>
 
-#include <type_safe/optional.hpp>
-
 namespace umigv {
 namespace ranges {
 
 template <typename I>
 class EnumeratedRange : public Range<EnumeratedRange<I>> {
 public:
-    using difference_type = RangeDiffT<EnumeratedRange>;
     using iterator = RangeIterT<EnumeratedRange>;
-    using pointer = RangePtrT<EnumeratedRange>;
     using reference = RangeRefT<EnumeratedRange>;
+    using size_type = RangeSizeT<EnumeratedRange>;
     using value_type = RangeValT<EnumeratedRange>;
 
     constexpr EnumeratedRange(const I &first, const I &last)
@@ -78,9 +75,8 @@ private:
 
 template <typename I>
 struct RangeTraits<EnumeratedRange<I>> {
-    using difference_type = IterDiffT<EnumIter<I>>;
+    using size_type = std::make_unsigned_t<IterDiffT<EnumIter<I>>>;
     using iterator = EnumIter<I>;
-    using pointer = IterPtrT<EnumIter<I>>;
     using reference = IterRefT<EnumIter<I>>;
     using value_type = IterValT<EnumIter<I>>;
 };
@@ -88,7 +84,7 @@ struct RangeTraits<EnumeratedRange<I>> {
 template <typename R>
 EnumeratedRange<RangeIterT<R>> enumerate(R &&range)
 noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value
-         && HAS_NOTHROW_BEGINEND<R>) {
+         && IS_NOTHROW_BEGINENDABLE<R>) {
     using std::begin;
     using std::end;
 

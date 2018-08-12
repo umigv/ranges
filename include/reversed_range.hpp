@@ -46,9 +46,8 @@ namespace ranges {
 template <typename I>
 class ReversedRange : public Range<ReversedRange<I>> {
 public:
-    using difference_type = RangeDiffT<ReversedRange>;
+    using size_type = RangeSizeT<ReversedRange>;
     using iterator = RangeIterT<ReversedRange>;
-    using pointer = RangePtrT<ReversedRange>;
     using reference = RangeRefT<ReversedRange>;
     using value_type = RangeValT<ReversedRange>;
 
@@ -57,12 +56,12 @@ public:
     : first_{ last }, last_{ first } { }
 
     constexpr iterator begin() const
-    noexcept(std::is_nothrow_copy_constructible<I>::value) {
+    noexcept(std::is_nothrow_copy_constructible<iterator>::value) {
         return first_;
     }
 
     constexpr iterator end() const
-    noexcept(std::is_nothrow_copy_constructible<I>::value) {
+    noexcept(std::is_nothrow_copy_constructible<iterator>::value) {
         return last_;
     }
 
@@ -74,8 +73,8 @@ private:
 template <typename R>
 constexpr ReversedRange<BeginResultT<R&&>> reverse(R &&range)
 noexcept(std::is_nothrow_copy_constructible<BeginResultT<R&&>>::value
-         && HAS_NOTHROW_BEGINEND<R&&>) {
-    static_assert(HAS_BEGINEND<R&&>, "R must have a begin and end");
+         && IS_NOTHROW_BEGINENDABLE<R&&>) {
+    static_assert(IS_BEGINENDABLE<R&&>, "R must have a begin and end");
 
     using std::begin;
     using std::end;
@@ -85,9 +84,8 @@ noexcept(std::is_nothrow_copy_constructible<BeginResultT<R&&>>::value
 
 template <typename I>
 struct RangeTraits<ReversedRange<I>> {
-    using difference_type = IterDiffT<RevIter<I>>;
+    using size_type = std::make_signed_t<IterDiffT<RevIter<I>>>;
     using iterator = RevIter<I>;
-    using pointer = IterPtrT<RevIter<I>>;
     using reference = IterRefT<RevIter<I>>;
     using value_type = IterValT<RevIter<I>>;
 };

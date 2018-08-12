@@ -49,10 +49,9 @@ class RangeAdapter : public Range<RangeAdapter<I>> {
 public:
     static_assert(IS_ITER<I>, "I must be an iterator");
 
-    using difference_type = RangeDiffT<RangeAdapter>;
     using iterator = I;
-    using pointer = RangePtrT<RangeAdapter>;
     using reference = RangeRefT<RangeAdapter>;
+    using size_type = RangeSizeT<RangeAdapter>;
     using value_type = RangeValT<RangeAdapter>;
 
     constexpr RangeAdapter(const I &first, const I &last)
@@ -79,12 +78,10 @@ noexcept(std::is_nothrow_copy_constructible<I>::value) {
     return { first, last };
 }
 
-template <typename R>
+template <typename R, std::enable_if_t<IS_BEGINENDABLE<R&&>, int> = 0>
 constexpr RangeAdapter<BeginResultT<R&&>> adapt(R &&range)
-noexcept(HAS_NOTHROW_BEGINEND<R>
+noexcept(IS_NOTHROW_BEGINENDABLE<R&&>
          && std::is_nothrow_copy_constructible<BeginResultT<R&&>>::value) {
-    static_assert(HAS_BEGINEND<R>, "R must have a begin and end");
-
     using std::begin;
     using std::end;
 
@@ -94,17 +91,13 @@ noexcept(HAS_NOTHROW_BEGINEND<R>
 template <typename T>
 constexpr RangeAdapter<RangeIterT<std::initializer_list<T>>>
 adapt(std::initializer_list<T> list) noexcept {
-    using std::begin;
-    using std::end;
-
-    return { begin(list), end(list) };
+    return { list.begin(), list.end() };
 }
 
 template <typename I>
 struct RangeTraits<RangeAdapter<I>> {
-    using difference_type = IterDiffT<I>;
+    using size_type = std::make_signed_t<IterDiffT<I>>;
     using iterator = I;
-    using pointer = IterPtrT<I>;
     using reference = IterRefT<I>;
     using value_type = IterValT<I>;
 };

@@ -49,9 +49,8 @@ class MappedRange : public Range<MappedRange<I, F>> {
     using IteratorT = MapIter<I, F>;
 
 public:
-    using difference_type = RangeDiffT<MappedRange>;
+    using size_type = RangeSizeT<MappedRange>;
     using iterator = RangeIterT<MappedRange>;
-    using pointer = RangePtrT<MappedRange>;
     using reference = RangeRefT<MappedRange>;
     using value_type = RangeValT<MappedRange>;
 
@@ -76,10 +75,13 @@ private:
 };
 
 template <typename R, typename F>
-constexpr MappedRange<RangeIterT<R>, RemoveCvrefT<F>> map(R &&range, F &&f)
-noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value
-         && std::is_nothrow_copy_constructible<RemoveCvrefT<F>>::value
-         && HAS_NOTHROW_BEGINEND<R>) {
+constexpr MappedRange<RemoveCvrefT<BeginResultT<R&&>>, RemoveCvrefT<F>>
+map(R &&range, F &&f)
+noexcept(
+    std::is_nothrow_copy_constructible<RemoveCvrefT<BeginResultT<R&&>>>::value
+    && std::is_nothrow_copy_constructible<RemoveCvrefT<F>>::value
+    && IS_NOTHROW_BEGINENDABLE<R>
+) {
     using std::begin;
     using std::end;
 
@@ -92,9 +94,8 @@ noexcept(std::is_nothrow_copy_constructible<RangeIterT<R>>::value
 
 template <typename I, typename F>
 struct RangeTraits<MappedRange<I, F>> {
-    using difference_type = IterDiffT<MapIter<I, F>>;
+    using size_type = std::make_unsigned_t<IterDiffT<MapIter<I, F>>>;
     using iterator = MapIter<I, F>;
-    using pointer = IterPtrT<MapIter<I, F>>;
     using reference = IterRefT<MapIter<I, F>>;
     using value_type = IterValT<MapIter<I, F>>;
 };

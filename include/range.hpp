@@ -52,27 +52,25 @@ namespace ranges {
 template <typename R>
 class Range {
 public:
-    using const_iterator = ConstIter<BeginResultT<R>>;
-    using difference_type = RangeDiffT<R>;
     using iterator = BeginResultT<R>;
-    using pointer = RangePtrT<R>;
     using reference = RangeRefT<R>;
+    using size_type = RangeSizeT<R>;
     using value_type = RangeValT<R>;
 
     constexpr iterator begin() const noexcept {
         return as_base().begin();
     }
 
-    constexpr const_iterator cbegin() const noexcept {
-        return const_iterator{ begin() };
+    constexpr auto cbegin() const noexcept {
+        return make_const_iter(begin());
     }
 
     constexpr iterator end() const noexcept {
         return as_base().end();
     }
 
-    constexpr const_iterator cend() const noexcept {
-        return const_iterator{ end() };
+    constexpr auto cend() const noexcept {
+        return make_const_iter(end());
     }
 
     template <typename F>
@@ -121,7 +119,7 @@ public:
         return C(begin(), end());
     }
 
-    constexpr RangeAdapter<const_iterator> as_const() const noexcept {
+    constexpr auto as_const() const noexcept {
         return ::umigv::ranges::adapt(cbegin(), cend());
     }
 

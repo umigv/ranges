@@ -152,8 +152,7 @@ private:
 template <typename T, std::size_t ...Is>
 struct RangeTraits<ZippedRange<T, Is...>> {
     using iterator = ZippedRangeIterator<T, Is...>;
-    using difference_type = typename iterator::difference_type;
-    using pointer = typename iterator::pointer;
+    using size_type = std::make_unsigned_t<typename iterator::difference_type>;
     using reference = typename iterator::reference;
     using value_type = typename iterator::value_type;
 };
@@ -173,7 +172,7 @@ template <typename ...Rs>
 decltype(auto) zip(Rs &&...ranges)
 noexcept(
     CONJUNCTION<std::is_nothrow_copy_constructible<RangeIterT<Rs>>...>
-    && CONJUNCTION<HAS_NOTHROW_BEGINEND<RangeIterT<Rs>>...>
+    && CONJUNCTION<IS_NOTHROW_BEGINENDABLE<RangeIterT<Rs>>...>
 ) {
     using std::begin;
     using std::end;

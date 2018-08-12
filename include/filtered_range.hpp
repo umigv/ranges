@@ -46,9 +46,8 @@ namespace ranges {
 template <typename I, typename P>
 class FilteredRange : public Range<FilteredRange<I, P>> {
 public:
-    using difference_type = RangeDiffT<FilteredRange>;
+    using size_type = RangeSizeT<FilteredRange>;
     using iterator = RangeIterT<FilteredRange>;
-    using pointer = RangePtrT<FilteredRange>;
     using reference = RangeRefT<FilteredRange>;
     using value_type = RangeValT<FilteredRange>;
 
@@ -76,9 +75,11 @@ private:
 template <typename R, typename P>
 constexpr FilteredRange<RemoveCvrefT<BeginResultT<R&&>>, RemoveCvrefT<P>>
 filter(R &&range, P &&predicate)
-noexcept(std::is_nothrow_copy_constructible<BeginResultT<R&&>>::value
-         && std::is_nothrow_copy_constructible<RemoveCvrefT<P>>::value
-         && HAS_NOTHROW_BEGINEND<R&&>) {
+noexcept(
+    std::is_nothrow_copy_constructible<RemoveCvrefT<BeginResultT<R&&>>>::value
+    && std::is_nothrow_copy_constructible<RemoveCvrefT<P>>::value
+    && IS_NOTHROW_BEGINENDABLE<R&&>
+) {
     using std::begin;
     using std::end;
 
@@ -91,10 +92,9 @@ noexcept(std::is_nothrow_copy_constructible<BeginResultT<R&&>>::value
 
 template <typename I, typename P>
 struct RangeTraits<FilteredRange<I, P>> {
-    using difference_type = IterDiffT<FilterIter<I, P>>;
     using iterator = FilterIter<I, P>;
-    using pointer = IterPtrT<FilterIter<I, P>>;
     using reference = IterRefT<FilterIter<I, P>>;
+    using size_type = std::make_unsigned_t<IterDiffT<FilterIter<I, P>>>;
     using value_type = IterValT<FilterIter<I, P>>;
 };
 
