@@ -113,7 +113,7 @@ template <typename T, bool = IS_ITER<T>>
 struct IsInIter : std::false_type { };
 
 template <typename T>
-struct IsInIter<T, true> : TrueTypeIfT<std::is_base_of<
+struct IsInIter<T, true> : BooleanConstant<std::is_base_of<
     std::input_iterator_tag,
     IterCatT<T>
 >::value> { };
@@ -125,7 +125,7 @@ template <typename T, bool = IS_ITER<T>>
 struct IsOutIter : std::false_type { };
 
 template <typename T>
-struct IsOutIter<T, true> : TrueTypeIfT<std::is_base_of<
+struct IsOutIter<T, true> : BooleanConstant<std::is_base_of<
     std::output_iterator_tag,
     IterCatT<T>
 >::value> { };
@@ -137,7 +137,7 @@ template <typename T, bool = IS_ITER<T>>
 struct IsFwdIter : std::false_type { };
 
 template <typename T>
-struct IsFwdIter<T, true> : TrueTypeIfT<std::is_base_of<
+struct IsFwdIter<T, true> : BooleanConstant<std::is_base_of<
     std::forward_iterator_tag,
     IterCatT<T>
 >::value> { };
@@ -149,7 +149,7 @@ template <typename T, bool = IS_ITER<T>>
 struct IsBidirIter : std::false_type { };
 
 template <typename T>
-struct IsBidirIter<T, true> : TrueTypeIfT<std::is_base_of<
+struct IsBidirIter<T, true> : BooleanConstant<std::is_base_of<
     std::bidirectional_iterator_tag,
     IterCatT<T>
 >::value> { };
@@ -161,7 +161,7 @@ template <typename T, bool = IS_ITER<T>>
 struct IsRandIter : std::false_type { };
 
 template <typename T>
-struct IsRandIter<T, true> : TrueTypeIfT<std::is_base_of<
+struct IsRandIter<T, true> : BooleanConstant<std::is_base_of<
     std::random_access_iterator_tag,
     IterCatT<T>
 >::value> { };

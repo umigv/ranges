@@ -47,18 +47,8 @@ namespace ranges {
 template <typename ...Ts>
 using VoidT = void;
 
-template <bool Condition>
-struct TrueTypeIf : std::false_type {
-    using type = std::false_type;
-};
-
-template <>
-struct TrueTypeIf<true> : std::true_type {
-    using type = std::true_type;
-};
-
-template <bool Condition>
-using TrueTypeIfT = typename TrueTypeIf<Condition>::type;
+template <bool B>
+using BooleanConstant = std::integral_constant<bool, B>;
 
 template <typename T, typename U, typename = void>
 struct IsEqualityComparableWith : std::false_type { };
@@ -74,7 +64,7 @@ constexpr bool IS_EQUALITY_COMPARABLE_WITH =
     IsEqualityComparableWith<T, U>::value;
 
 template <typename T>
-struct IsEqualityComparable : TrueTypeIfT<
+struct IsEqualityComparable : BooleanConstant<
     IS_EQUALITY_COMPARABLE_WITH<T, T>
 > { };
 
@@ -85,7 +75,7 @@ template <typename T, typename U, bool = IS_EQUALITY_COMPARABLE_WITH<T, U>>
 struct IsNothrowEqualityComparableWith : std::false_type { };
 
 template <typename T, typename U>
-struct IsNothrowEqualityComparableWith<T, U, true> : TrueTypeIfT<
+struct IsNothrowEqualityComparableWith<T, U, true> : BooleanConstant<
     noexcept(std::declval<T>() == std::declval<U>())
     && noexcept(std::declval<U>() == std::declval<T>())
 > { };
@@ -95,7 +85,7 @@ constexpr bool IS_NOTHROW_EQUALITY_COMPARABLE_WITH =
     IsNothrowEqualityComparableWith<T, U>::value;
 
 template <typename T>
-struct IsNothrowEqualityComparable : TrueTypeIfT<
+struct IsNothrowEqualityComparable : BooleanConstant<
     IS_NOTHROW_EQUALITY_COMPARABLE_WITH<T, T>
 > { };
 
@@ -146,7 +136,7 @@ template <typename ...Ts>
 constexpr bool DISJUNCTION = Disjunction<Ts...>::value;
 
 template <typename T>
-struct IsSwappable : TrueTypeIfT<
+struct IsSwappable : BooleanConstant<
     umigv_ranges_detail_adl_traits::IsSwappable<T>::value
 > { };
 
@@ -154,7 +144,7 @@ template <typename T>
 constexpr bool IS_SWAPPABLE = IsSwappable<T>::value;
 
 template <typename T, typename U>
-struct IsSwappableWith : TrueTypeIfT<
+struct IsSwappableWith : BooleanConstant<
     umigv_ranges_detail_adl_traits::IsSwappableWith<T, U>::value
 > { };
 
@@ -162,7 +152,7 @@ template <typename T, typename U>
 constexpr bool IS_SWAPPABLE_WITH = IsSwappableWith<T, U>::value;
 
 template <typename T>
-struct IsNothrowSwappable : TrueTypeIfT<
+struct IsNothrowSwappable : BooleanConstant<
     umigv_ranges_detail_adl_traits::IsNothrowSwappable<T>::value
 > { };
 
@@ -170,7 +160,7 @@ template <typename T>
 constexpr bool IS_NOTHROW_SWAPPABLE = IsNothrowSwappable<T>::value;
 
 template <typename T, typename U>
-struct IsNothrowSwappableWith : TrueTypeIfT<
+struct IsNothrowSwappableWith : BooleanConstant<
     umigv_ranges_detail_adl_traits::IsNothrowSwappableWith<T, U>::value
 > { };
 

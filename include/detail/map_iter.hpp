@@ -75,7 +75,7 @@ template <typename C, typename T>
 using map_result_t = typename map_result<C, T>::type;
 
 template <typename C, typename T>
-struct is_nothrow_mappable : TrueTypeIfT<std::conditional_t<
+struct is_nothrow_mappable : BooleanConstant<std::conditional_t<
     IS_INVOCABLE<C, T>,
     IsNothrowInvocable<C, T>,
     IsNothrowApplicable<C, T>
